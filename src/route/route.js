@@ -2,13 +2,13 @@ const express = require('express')
 
 const router = express.Router()
 
-const {} = require('../controller/userctrl')
+const {userLogin} = require('../controller/userctrl')
 
 
 
 //! User APIs ------
 router.post  ('/register', )
-router.post  ('/login', )
+router.post  ('/login', userLogin)
 router.get   ('/user/:userId/profile', )
 router.put   ('/user/:userId/profile', )
 
