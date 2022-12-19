@@ -1,32 +1,39 @@
 const mongoose = require('mongoose')
 
+let x = mongoose.Schema.Types.Mixed
+
 module.exports = mongoose.model(
     'user',
 
     new mongoose.Schema({
 
         fname: {
-            type: String,
-            required: true
+            type: mixed,
+            required: true,
+            trim: true
         },
         lname: {
             type: String,
-            required: true
+            required: true,
+            trim: true
         },
         email: {
             type: String,
             required: true,
-            unique: true
+            unique: true,
+            trim: true
             //! valid email 
         },
         profileImage: {
             type: String,
-            required: true
+            required: true,
+            trim: true
         }, // s3 link
         phone: {
             type: String,
             required: true,
-            unique: true
+            unique: true,
+            trim: true
             //! valid Indian mobile number 
         },
         password: {
@@ -39,29 +46,35 @@ module.exports = mongoose.model(
             shipping: {
                 street: {
                     type: String,
-                    required: true
+                    required: true,
+                    trim: true
                 },
                 city: {
                     type: String,
-                    required: true
+                    required: true,
+                    trim: true
                 },
                 pincode: {
                     type: String,
-                    required: true
+                    required: true,
+                    trim: true
                 }
             },
             billing: {
                 street: {
                     type: String,
-                    required: true
+                    required: true,
+                    trim: true
                 },
                 city: {
                     type: String,
-                    required: true
+                    required: true,
+                    trim: true
                 },
                 pincode: {
                     type: Number,
-                    required: true
+                    required: true,
+                    trim: true
                 }
             }
         }
