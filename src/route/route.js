@@ -2,30 +2,32 @@ const express = require('express')
 
 const router = express.Router()
 
+const {} = require('../controller/userctrl')
+
 
 
 //! User APIs ------
-router.post  ('/')
-router.post  ('/')
-router.get   ('/')
-router.put   ('/')
+router.post  ('/register', )
+router.post  ('/login', )
+router.get   ('/user/:userId/profile', )
+router.put   ('/user/:userId/profile', )
 
-//! Products APIs ------
-router.post  ('/')
-router.get   ('/')
-router.get   ('/')
-router.put   ('/')
-router.delete('/')
+//todo Products APIs ------
+router.post  ('/products', )
+router.get   ('/products', )
+router.get   ('/products/:productId', )
+router.put   ('/products/:productId', )
+router.delete('/products/:productId', )
 
-//! Cart APIs ------
-router.post  ('/')
-router.put   ('/')
-router.get   ('/')
-router.delete('/')
+//todo Cart APIs ------
+router.post  ('/users/:userId/cart', )
+router.put   ('/users/:userId/cart', )
+router.get   ('/users/:userId/cart', )
+router.delete('/users/:userId/cart', )
 
-//! Checkout/Order APIs ------
-router.post  ('/')
-router.put   ('/')
+//todo Checkout/Order APIs ------
+router.post  ('/users/:userId/orders', )
+router.put   ('/users/:userId/orders', )
 
 
 module.exports = router
