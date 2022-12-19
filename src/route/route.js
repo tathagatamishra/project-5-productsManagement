@@ -2,7 +2,7 @@ const express = require('express')
 
 const router = express.Router()
 
-const {userLogin} = require('../controller/userctrl')
+const {userLogin, updateUser} = require('../controller/userctrl')
 
 
 
@@ -10,7 +10,7 @@ const {userLogin} = require('../controller/userctrl')
 router.post  ('/register', )
 router.post  ('/login', userLogin)
 router.get   ('/user/:userId/profile', )
-router.put   ('/user/:userId/profile', )
+router.put   ('/user/:userId/profile', updateUser)
 
 //todo Products APIs ------
 router.post  ('/products', )

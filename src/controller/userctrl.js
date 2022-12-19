@@ -72,30 +72,34 @@ exports.updateUser = async (req, res) => {
         let user = await userModel.findById(userId)
         if (!user) return res.status(404).send({ status: false, message: "User not found 😵‍💫😭" })
         
+
         //! need jpg/png to update profile pic, only then link will generate
+        let data = req.body
         let image = req.files
-        if (image) {
+
+        if (image.length == 0 && Object.keys(data).length == 0) return res.status(200).send({ status: true, message: "Nothing to update 😜" })
+
+        if (image.length == 1) {
             
-            if (image) return res.status(400).send({ status: false, message: "Provide a jpeg/png file 📷" })
+            if (image[0].mimetype.split('/')[0] != 'image') return res.status(400).send({ status: false, message: "Provide a jpeg or png file 📷" })
             
             let imageLink = await uploadFile(image[0])
             req.body.profileImage = imageLink
         }
         
         //! performing validation on these fields
-        let data = req.body
-        let { fname, lname, email, phone, password } = data
+        let { fname, lname, email, phone, password, address } = data
 
-        if (fname) if (fname.trim() == '' || fname.match(nameValid)) return res.status(400).send({ status: false, message: "First name can not be empty" })
+        if (fname) if (fname == null || fname.trim() == '' || !fname.match(nameValid)) return res.status(400).send({ status: false, message: "First name can not be empty" })
 
-        if (lname) if (lname.trim() == '' || lname.match(nameValid)) return res.status(400).send({ status: false, message: "Last name can not be empty" })
+        if (lname) {if (lname == null || lname.trim() == '' || !lname.match(nameValid)) return res.status(400).send({ status: false, message: "Last name can not be empty" })}
 
 
         if (email) email = email.trim()
-        if (email == '') return res.status(400).send({ status: false, message: "Email can not be empty" })
+        if (email == null || email == '') return res.status(400).send({ status: false, message: "Email can not be empty" })
 
         if (phone) phone = phone.trim()
-        if (phone == '') return res.status(400).send({ status: false, message: "Phone number can not be empty" })
+        if (phone == null || phone == '') return res.status(400).send({ status: false, message: "Phone number can not be empty" })
 
         let unique = await userModel.findOne({ $or: [{ email: email }, { phone: phone }] })
         if (unique) {
@@ -107,7 +111,11 @@ exports.updateUser = async (req, res) => {
             if (password.length < 8 || password.length > 15)
                 return res.status(400).send({ status: false, message: "Password length must be between 8-15" })
         }
-
+        
+        if (address) address = address.trim()
+        if (address == null || address == '') return res.status(400).send({ status: false, message: "Address can not be empty" })
+        
+        
         //! updating user data in db
         let updatedUser = await userModel.findOneAndUpdate({ _id: userId }, { $set: data }, { new: true })
 
