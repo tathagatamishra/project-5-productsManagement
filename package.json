@@ -1,0 +1,23 @@
+{
+  "name": "project-5-productsmanagement",
+  "version": "1.0.0",
+  "description": "Project 5 Shopping Cart",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "npx nodemon src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tathagatamishra/project-5-productsManagement.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tathagatamishra/project-5-productsManagement/issues"
+  },
+  "homepage": "https://github.com/tathagatamishra/project-5-productsManagement#readme",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
