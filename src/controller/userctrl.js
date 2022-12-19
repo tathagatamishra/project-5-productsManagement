@@ -67,20 +67,24 @@ exports.userLogin = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
     try {
-
+        //! checking if user id is present in db or not
         let userId = req.params.userId
         let user = await userModel.findById(userId)
         if (!user) return res.status(404).send({ status: false, message: "User not found 😵‍💫😭" })
-
-
-        let image = req.files.profileImage
-
-        if (image) { let profileImage = await uploadFile(image[0]) }
-
-
+        
+        //! need jpg/png to update profile pic, only then link will generate
+        let image = req.files
+        if (image) {
+            
+            if (image) return res.status(400).send({ status: false, message: "Provide a jpeg/png file 📷" })
+            
+            let imageLink = await uploadFile(image[0])
+            req.body.profileImage = imageLink
+        }
+        
+        //! performing validation on these fields
         let data = req.body
         let { fname, lname, email, phone, password } = data
-
 
         if (fname) if (fname.trim() == '' || fname.match(nameValid)) return res.status(400).send({ status: false, message: "First name can not be empty" })
 
@@ -104,7 +108,7 @@ exports.updateUser = async (req, res) => {
                 return res.status(400).send({ status: false, message: "Password length must be between 8-15" })
         }
 
-
+        //! updating user data in db
         let updatedUser = await userModel.findOneAndUpdate({ _id: userId }, { $set: data }, { new: true })
 
         return res.status(201).send({ status: true, message: "Your profile updated successfully 😃", data: updatedUser })

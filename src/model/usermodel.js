@@ -1,14 +1,12 @@
 const mongoose = require('mongoose')
 
-let x = mongoose.Schema.Types.Mixed
-
 module.exports = mongoose.model(
     'user',
 
     new mongoose.Schema({
 
         fname: {
-            type: mixed,
+            type: String,
             required: true,
             trim: true
         },

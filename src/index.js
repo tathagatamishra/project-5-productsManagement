@@ -1,6 +1,6 @@
 const express = require('express')
-const mongoose = require('mongoose')
 const multer = require('multer')
+const mongoose = require('mongoose')
 const router = require('./route/route')
 
 const app = express()
@@ -16,7 +16,7 @@ mongoose.connect("mongodb+srv://new_user:jk1BBWwmxQpZ31zO@cluster0.pxvwsjp.mongo
 
 app.use('/', router)
 
-app.use('/', function (req, res) {
+app.use('/', function (_, res) {
     res.status(404).send({ status: false, message: "Url not found !!!" })
 })
 
