@@ -69,6 +69,30 @@ const createProduct = async function(req,res){
     }
 }
 
+let getProductDetails = async function (req, res) {
+    try {
+        let queries = req.query
+        const obj = {}
+        for (let i in queries) {
+            if (i == "name" && queries[i]) {
+                obj.title = queries[i]
+            } if (i == "size" && queries[i]) {
+                obj.availableSizes = queries[i]
+            }
+        }
+        const { priceGreaterThan, priceLessThan } = queries
+        console.log(obj);
+        let getData = await productModel.find({isDeleted:false,...obj,price:{$gt:priceGreaterThan,$lt:priceLessThan}})
+        if (getData.length == 0) return res.status(404).send({ status: false, message: "No data found" })
+        return res.status(200).send({ status: true, message: "Success", data: getData })
+
+    } catch (error) {
+        return res.status(500).send({ status: false, message: error.message })
+    }
+}
+
+
+
 exports.getProductById = async (req, res) => {
     try {
         let id = req.params.productId
@@ -85,3 +109,4 @@ exports.getProductById = async (req, res) => {
 }
 
 module.exports.createProduct = createProduct
+module.exports.getProductDetails = getProductDetails

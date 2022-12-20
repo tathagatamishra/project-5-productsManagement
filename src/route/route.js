@@ -3,7 +3,7 @@ const express = require('express')
 const router = express.Router()
 
 const {userReg, userLogin, getUser, updateUser} = require('../controller/userctrl')
-const {getProductById, createProduct} = require('../controller/productctrl')
+const {getProductById, createProduct, getProductDetails} = require('../controller/productctrl')
 const userValidations=require('../middleware/userValidations')
 
 
@@ -16,7 +16,7 @@ router.put   ('/user/:userId/profile', updateUser)
 
 //todo Products APIs ------
 router.post  ('/products',createProduct )
-router.get   ('/products', )
+router.get   ('/products', getProductDetails )
 router.get   ('/products/:productId', getProductById)
 router.put   ('/products/:productId', )
 router.delete('/products/:productId', )
