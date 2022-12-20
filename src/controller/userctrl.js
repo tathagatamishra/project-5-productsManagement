@@ -1,6 +1,6 @@
 const userModel = require('../model/usermodel')
 const validware = require('../middleware/validware')
-const { isValidEmail } = validware
+const { isValidEmail,isValidObjectId } = validware
 
 const jwt = require('jsonwebtoken')
 const AWS = require('aws-sdk')
