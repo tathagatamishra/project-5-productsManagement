@@ -10,4 +10,23 @@ const isValidObjectId = function(id){
     return mongoose.Types.ObjectId.isValid(id)
 }
 
-module.exports = { isValidEmail , isValidObjectId}
+const isValidName = (name) => {
+
+    return /^[A-Za-z\s]{1,50}$/.test(name)
+}
+const isValidMobile = (mobile) => {
+
+    return /^[6-9]\d{9}$/.test(mobile);
+  }
+
+  const isValidPincode = function (pincode) {
+      if (/^[1-9][0-9]{5}$/.test(pincode)){
+         return true
+      }
+      return false
+     }
+
+
+
+
+module.exports = { isValidEmail , isValidObjectId,isValidName,isValidMobile,isValidPincode}

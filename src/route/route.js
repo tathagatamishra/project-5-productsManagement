@@ -2,14 +2,16 @@ const express = require('express')
 
 const router = express.Router()
 
-const {userLogin, updateUser} = require('../controller/userctrl')
+const {userReg, userLogin, getUser, updateUser} = require('../controller/userctrl')
 const {getProductById} = require('../controller/productctrl')
+const userValidations=require('../middleware/userValidations')
+
 
 
 //! User APIs ------
-router.post  ('/register', )
+router.post  ('/register', userValidations,userReg)
 router.post  ('/login', userLogin)
-router.get   ('/user/:userId/profile', )
+router.get   ('/user/:userId/profile', getUser)
 router.put   ('/user/:userId/profile', updateUser)
 
 //todo Products APIs ------

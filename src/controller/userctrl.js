@@ -1,42 +1,35 @@
 const userModel = require('../model/usermodel')
-const validware = require('../middleware/validware')
-const { isValidEmail, isValidObjectId } = validware
+const uploadFile = require('./awsS3')
+
+const validWare = require('../middleware/validware')
+const { isValidEmail, isValidObjectId } = validWare
 
 const jwt = require('jsonwebtoken')
-const AWS = require('aws-sdk')
 
 
 let nameValid = /^[a-zA-Z0-9-_\ ]{1,20}$/
 
 
-AWS.config.update({
-    accessKeyId: "AKIAY3L35MCRZNIRGT6N",
-    secretAccessKey: "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",
-    region: "ap-south-1"
-})
+exports.userReg = async (req, res) => {
+    try {
+        const data = req.body
+        const file = req.files
 
-let uploadFile = async (file) => {
+        if (file && file.length > 0) {
+            if (file[0].mimetype.indexOf('image') == -1) {
+                return res.send({ status: false, message: "Provide an image file" })
+            }
+            const profileURL = await uploadFile(file[0])
 
-    return new Promise((resolve, reject) => {
-
-        let s3 = new AWS.S3({ apiVersion: '2006-03-01' })
-
-        var uploadParams = {
-            ACL: "public-read",
-            Bucket: "classroom-training-bucket",
-            Key: "shopping-cart-user/" + file.originalname,
-            Body: file.buffer
+            data.profileImage = profileURL
+            const createdData = await userModel.create(data)
+            res.send({ status: true, message: "User created successfully", data: createdData })
+            // res.send("Data created!")
+        } else {
+            res.status(400).send({ status: false, msg: "No files found" })
         }
-
-        s3.upload(uploadParams, function (err, data) {
-
-            if (err) return reject({ "error": err })
-
-            return resolve(data.Location)
-        })
-    })
+    } catch (err) { res.status(500).send({ status: false, message: "Internal Server Error!", error: err.message }) }
 }
-
 
 exports.userLogin = async (req, res) => {
     try {
@@ -64,7 +57,7 @@ exports.userLogin = async (req, res) => {
     }
 }
 
-const fetchDetails = async function (req, res) {
+exports.getUser = async function (req, res) {
     try {
         let userId = req.params.userId
         if (!isValidObjectId(userId)) {
@@ -80,7 +73,6 @@ const fetchDetails = async function (req, res) {
     }
 }
 
-
 exports.updateUser = async (req, res) => {
     try {
         //! checking if user id is present in db or not
@@ -93,7 +85,7 @@ exports.updateUser = async (req, res) => {
         let data = req.body
         let image = req.files
 
-        if (image.length == 0 && Object.keys(data).length == 0) return res.status(200).send({ status: true, message: "Nothing to update 😜" })
+        if ((image == undefined || image.length == 0) && Object.keys(data).length == 0) return res.status(200).send({ status: true, message: "Nothing to update 😜" })
 
         if (image.length == 1) {
 
@@ -152,6 +144,3 @@ exports.updateUser = async (req, res) => {
         res.status(500).send({ status: false, message: error.message })
     }
 }
-
-
-module.exports.fetchDetails = fetchDetails;
