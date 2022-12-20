@@ -71,7 +71,7 @@ exports.createProduct = async function (req, res) {
     }
 }
 
-let getProductDetails = async function (req, res) {
+exports.getProductDetails = async function (req, res) {
     try {
         let queries = req.query
         const obj = {}
@@ -110,5 +110,3 @@ exports.getProductById = async (req, res) => {
         res.status(500).send({ status: false, message: error.message })
     }
 }
-
-module.exports.createProduct = createProduct
