@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 
 module.exports = mongoose.model(
-    'user',
+    'product',
 
     new mongoose.Schema({
 
@@ -13,50 +13,61 @@ module.exports = mongoose.model(
         },
         description: {
             type: String,
-            required: true
+            required: true,
+            trim: true
         },
         price: {
             type: Number,
-            required: true
+            required: true,
+            trim: true
             //! valid number/ decimal
         },
         currencyId: { 
             type: String,
             required: true, 
-            default: "INR" 
+            default: "INR",
+            trim: true 
         },
         currencyFormat: { 
             type: String,
-            required: true, 
+            required: true,
+            trim: true 
             //! Rupee symbol 
         },
         isFreeShipping: { 
             type: Boolean,
-            default: false 
+            default: false,
+            trim: true 
         },
         productImage: { 
             type: String,
-            required: true 
+            required: true,
+            trim: true 
         },  // s3 link
         style: { 
-            type: String 
+            type: String,
+            trim: true
         },
         availableSizes: { 
             type: String, 
             enum: ["S", "XS", "M", "X", "L", "XXL", "XL"],
-            required: true
+            required: true,
+            trim: true
             //! at least one size
         },
         installments: { 
-            type: Number 
+            type: Number,
+            trim: true
         },
         deletedAt: { 
-            type: Date
+            type: Date,
+            trim: true
             //! when the document is deleted 
         },
         isDeleted: { 
             type: Boolean, 
-            default: false 
+            default: false,
+            trim: true
         }
 
     }, { timestamps: true })
