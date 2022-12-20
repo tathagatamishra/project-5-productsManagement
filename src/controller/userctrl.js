@@ -64,6 +64,22 @@ exports.userLogin = async (req, res) => {
     }
 }
 
+const fetchDetails = async function(req,res){
+    try {
+        let userId = req.params.userId
+        if(!isValidObjectId(userId)){
+            return res.status(400).send({status:false , message:"Invalid userId"})
+        }
+        const checkId = await userModel.findOne({_id:userId})
+        if(!checkId){
+            return res.status(400).send({status:false , message:"User not found"})
+        }
+        return res.status(200).send({status:true, message: "User profile details" , data: checkId})
+    } catch (error) {
+        return res.status(500).send({status:false , msg: error.message})
+    }
+}
+
 
 exports.updateUser = async (req, res) => {
     try {
@@ -128,3 +144,4 @@ exports.updateUser = async (req, res) => {
 }
 
 
+module.exports.fetchDetails = fetchDetails;
