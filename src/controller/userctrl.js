@@ -57,7 +57,7 @@ exports.userLogin = async (req, res) => {
         }, "the-secret-key", { expiresIn: '30m' })
 
         res.setHeader('Authorization', token)
-        return res.status(200).send({ status: true, message: "User login successfull", data: { userId: userData._id, token: token } });
+        return res.status(200).send({ status: true, message: "User login successful", data: { userId: userData._id, token: token } });
 
     } catch (error) {
         return res.status(500).send({ status: false, message: error.message })
@@ -97,6 +97,7 @@ exports.updateUser = async (req, res) => {
 
         if (email) email = email.trim()
         if (email == null || email == '') return res.status(400).send({ status: false, message: "Email can not be empty" })
+        if (!isValidEmail(email)) return res.status(400).send({ status: false, message: "Email id is not valid" })
 
         if (phone) phone = phone.trim()
         if (phone == null || phone == '') return res.status(400).send({ status: false, message: "Phone number can not be empty" })

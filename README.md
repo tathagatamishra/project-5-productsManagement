@@ -11,7 +11,7 @@
   6) We will repeat steps from Step 1 to Step 5 for each feature in this project.
 - This project is divided into 4 features namely User, Product, Cart and Order. You need to work on a single feature at a time. Once that is completed as per above mentioned steps. You will be instructed to move to next Feature.
 - In this project we are changing how we send token with a request. Instead of using a custom header key like x-api-key, you need to use Authorization header and send the JWT token as Bearer token.
-- Create a group database `groupXDatabase`. You can clean the db you previously used and resue that.
+- Create a group database `groupXDatabase`. You can clean the db you previously used and reuse that.
 - This time each group should have a *single git branch*. Coordinate amongst yourselves by ensuring every next person pulls the code last pushed by a team mate. You branch will be checked as part of the demo. Branch name should follow the naming convention `project/productsManagementGroupX`
 - Follow the naming conventions exactly as instructed.
 
@@ -86,7 +86,7 @@
 
 ### POST /login
 - Allow an user to login with their email and password.
-- On a successful login attempt return the userId and a JWT token contatining the userId, exp, iat.
+- On a successful login attempt return the userId and a JWT token containing the userId, exp, iat.
 > **_NOTE:_** There is a slight change in response body. You should also return userId in addition to the JWT token.
 - __Response format__
   - _**On success**_ - Return HTTP status 200 and JWT token in response body. The response should be a JSON object like [this](#successful-response-structure)
@@ -94,7 +94,7 @@
 ```yaml
 {
     "status": true,
-    "message": "User login successfull",
+    "message": "User login successful",
     "data": {
         "userId": "6165f29cfe83625cf2c10a5c",
         "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2MTYyODc2YWJkY2I3MGFmZWVhZjljZjUiLCJpYXQiOjE2MzM4NDczNzYsImV4cCI6MTYzMzg4MzM3Nn0.PgcBPLLg4J01Hyin-zR6BCk7JHBY-RpuWMG_oIK7aV8"
