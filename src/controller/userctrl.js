@@ -7,7 +7,7 @@ const { isValidEmail, isValidObjectId } = validWare
 const jwt = require('jsonwebtoken')
 
 
-let nameValid = /^[a-zA-Z0-9-_\ ]{1,20}$/
+let nameValid = /^[a-zA-Z0-9\ ]{1,20}$/
 
 
 exports.userReg = async (req, res) => {
@@ -28,7 +28,10 @@ exports.userReg = async (req, res) => {
         } else {
             res.status(400).send({ status: false, msg: "No files found" })
         }
-    } catch (err) { res.status(500).send({ status: false, message: "Internal Server Error!", error: err.message }) }
+    }
+    catch (err) {
+        res.status(500).send({ status: false, message: "Internal Server Error!", error: err.message })
+    }
 }
 
 exports.userLogin = async (req, res) => {
@@ -133,6 +136,35 @@ exports.updateUser = async (req, res) => {
         if (address) {
             if (address == null || address == '') return res.status(400).send({ status: false, message: "Address can not be empty" })
         }
+
+        
+        req.body.address = JSON.parse(req.body.address)
+
+        if (typeof req.body.address != 'object') {
+
+            return res.status(400).send({ status: false, message: `Address must be an object` })
+        } 
+        else {
+            let { shipping, billing } = req.body.address
+            
+            if (!shipping || typeof shipping != 'object') {
+                return res.status(400).send({ status: false, message: `Shipping address is eiether not provided or is not an object` })
+            }
+            if (!billing || typeof billing != 'object') {
+                return res.status(400).send({ status: false, message: `Billing address is eiether not provided or is not an object` })
+            }
+            else {
+                var { street, city, pincode } = shipping
+                if (typeof street != 'string' || typeof city != 'string' || typeof pincode != 'number') {
+                    return res.status(400).send({ status: false, message: `street and city in shipping address should be string and pincode should be a number` })
+                }
+                var { street, city, pincode } = billing
+                if (typeof street != 'string' || typeof city != 'string' || typeof pincode != 'number') {
+                    return res.status(400).send({ status: false, message: `street and city in billing address should be string and pincode should be a number` })
+                }
+            }
+        }
+
 
 
         //! updating user data in db

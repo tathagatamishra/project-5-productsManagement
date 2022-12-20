@@ -6,7 +6,7 @@ const isValidEmail = function (value) {
     if (emailRegex.test(value)) return true;
 };
 
-const isValidObjectId = function(id){
+const isValidObjectId = function (id) {
     return mongoose.Types.ObjectId.isValid(id)
 }
 
@@ -17,30 +17,30 @@ const isValidName = (name) => {
 const isValidMobile = (mobile) => {
 
     return /^[6-9]\d{9}$/.test(mobile);
-  }
+}
 
-  const isValidPincode = function (pincode) {
-      if (/^[1-9][0-9]{5}$/.test(pincode)){
-         return true
-      }
-      return false
-     }
+const isValidPincode = function (pincode) {
+    if (/^[1-9][0-9]{5}$/.test(pincode)) {
+        return true
+    }
+    return false
+}
 
-     const isValidString = function (value) {
-        if (typeof value === "undefined" || value === null) return false;
-        if (typeof value === "string" && value.trim().length === 0) return false;
-        return true;
-      };
-    
-      //Style Validation
-      const isValidStyle = function (value) {
-        return /^[a-zA-Z _.-]+$/.test(value);
-      };
-      
-     //Price Validation
-    const isValidPrice = function (price) {
-        return /^[1-9]\d{0,7}(?:\.\d{1,2})?$/.test(price);
-      };
+const isValidString = function (value) {
+    if (typeof value === "undefined" || value === null) return false;
+    if (typeof value === "string" && value.trim().length === 0) return false;
+    return true;
+};
+
+//Style Validation
+const isValidStyle = function (value) {
+    return /^[a-zA-Z _.-]+$/.test(value);
+};
+
+//Price Validation
+const isValidPrice = function (price) {
+    return /^[1-9]\d{0,7}(?:\.\d{1,2})?$/.test(price);
+};
 
 
-module.exports = { isValidEmail , isValidObjectId,isValidName,isValidMobile,isValidPincode , isValidString , isValidStyle , isValidPrice}
+module.exports = { isValidEmail, isValidObjectId, isValidName, isValidMobile, isValidPincode, isValidString, isValidStyle, isValidPrice }

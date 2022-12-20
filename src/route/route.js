@@ -4,18 +4,18 @@ const router = express.Router()
 
 const {userReg, userLogin, getUser, updateUser} = require('../controller/userctrl')
 const {getProductById, createProduct} = require('../controller/productctrl')
-const userValidations=require('../middleware/userValidations')
+const userValidations = require('../middleware/userValidations')
 
 
 
-//! User APIs ------
-router.post  ('/register', userValidations,userReg)
+// User APIs ------
+router.post  ('/register', userValidations, userReg)
 router.post  ('/login', userLogin)
 router.get   ('/user/:userId/profile', getUser)
 router.put   ('/user/:userId/profile', updateUser)
 
-//todo Products APIs ------
-router.post  ('/products',createProduct )
+//! Products APIs ------
+router.post  ('/products', createProduct)
 router.get   ('/products', )
 router.get   ('/products/:productId', getProductById)
 router.put   ('/products/:productId', )
