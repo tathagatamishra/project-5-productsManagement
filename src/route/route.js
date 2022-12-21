@@ -3,7 +3,7 @@ const express = require('express')
 const router = express.Router()
 
 const {userReg, userLogin, getUser, updateUser} = require('../controller/userctrl')
-const {getProductById, createProduct, getProductDetails} = require('../controller/productctrl')
+const {getProductById, createProduct, getProductDetails, deleteProduct} = require('../controller/productctrl')
 const userValidations=require('../middleware/userValidations')
 
 
@@ -19,7 +19,7 @@ router.post  ('/products',createProduct )
 router.get   ('/products', getProductDetails )
 router.get   ('/products/:productId', getProductById)
 router.put   ('/products/:productId', )
-router.delete('/products/:productId', )
+router.delete('/products/:productId',deleteProduct )
 
 //todo Cart APIs ------
 router.post  ('/users/:userId/cart', )
