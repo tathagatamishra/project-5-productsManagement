@@ -31,7 +31,7 @@ module.exports = mongoose.model(
         currencyFormat: { 
             type: String,
             required: true,
-            default: '$',
+            default: '₹',
             trim: true 
             //! Rupee symbol 
         },
