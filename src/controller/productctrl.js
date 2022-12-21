@@ -78,7 +78,7 @@ exports.getProductDetails = async function (req, res) {
         let { name, size, priceGreaterThan, priceLessThan } = queries
 
         let obj = {}
-        if (name != undefined) { obj.title = name }
+        if (name != undefined) { obj.title = name.toLowerCase() }
         if (size != undefined) { obj.availableSizes = size }
 
         let len = Object.keys(obj).length
