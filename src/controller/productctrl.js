@@ -1,7 +1,7 @@
 const productModel = require('../model/productmodel')
 
 const validWare = require('../middleware/validware')
-const { isValidString, isValidStyle, isValidPrice } = validWare
+const { isValidString, isValidStyle, isValidPrice,isValidObjectId } = validWare
 
 
 
@@ -142,6 +142,22 @@ exports.getProductById = async (req, res) => {
         return res.status(200).send({ status: true, message: "Success", data: product })
     }
     catch (error) {
+        res.status(500).send({ status: false, message: error.message })
+    }
+}
+
+exports.deleteProduct = async function(req,res){
+    try {
+        let productId = req.params.productId
+        if (!isValidObjectId(productId)) return res.status(400).send({ status: false, message: `productId: ${productId} is invalid.` });
+        const checkId = await productModel.findOne({_id:productId,isDeleted:false})
+        if(!checkId){
+            return res.status(404).send({status:false , message:"product not found"})
+        }
+        await productModel.findOneAndUpdate({_id:productId,isDeleted:false},{$set:{isDeleted:true , isDeletedAt:Date.now()}},{new:true})
+        return res.status(200).send({status:true,message:"Product deleted Successfully"})
+        
+    } catch (error) {
         res.status(500).send({ status: false, message: error.message })
     }
 }
