@@ -74,26 +74,61 @@ exports.createProduct = async function (req, res) {
 exports.getProductDetails = async function (req, res) {
     try {
         let queries = req.query
-        const obj = {}
-        for (let i in queries) {
-            if (i == "name" && queries[i]) {
-                obj.title = queries[i]
-            } if (i == "size" && queries[i]) {
-                obj.availableSizes = queries[i]
-            }
+
+        let { name, size, priceGreaterThan, priceLessThan } = queries
+
+        let obj = {}
+        if (name != undefined) { obj.title = name }
+        if (size != undefined) { obj.availableSizes = size }
+
+        let len = Object.keys(obj).length
+
+        //!===============================================
+        if (len != 0 && priceGreaterThan && priceLessThan) {
+
+            let product = await productModel.find({ isDeleted: false, ...obj, price: { $gt: priceGreaterThan }, price: { $lt: priceLessThan } })
+            return res.status(200).send({ status: true, message: "Success 1", data: product })
         }
-        const { priceGreaterThan, priceLessThan } = queries
-        console.log(obj);
-        let getData = await productModel.find({isDeleted:false,...obj,price:{$gt:priceGreaterThan,$lt:priceLessThan}})
-        if (getData.length == 0) return res.status(404).send({ status: false, message: "No data found" })
-        return res.status(200).send({ status: true, message: "Success", data: getData })
+        if (len != 0 && priceGreaterThan) {
+
+            let product = await productModel.find({ isDeleted: false, ...obj, price: { $gt: priceGreaterThan } })
+            return res.status(200).send({ status: true, message: "Success 2", data: product })
+        }
+        if (len != 0 && priceLessThan) {
+
+            let product = await productModel.find({ isDeleted: false, ...obj, price: { $lt: priceLessThan } })
+            return res.status(200).send({ status: true, message: "Success 3", data: product })
+        }
+        //!===============================================
+        if (priceGreaterThan && priceLessThan) {
+
+            let product = await productModel.find({ isDeleted: false, price: { $gt: priceGreaterThan }, price: { $lt: priceLessThan } })
+            return res.status(200).send({ status: true, message: "Success 4", data: product })
+        }
+        if (priceGreaterThan) {
+
+            let product = await productModel.find({ isDeleted: false, price: { $gt: priceGreaterThan } })
+            return res.status(200).send({ status: true, message: "Success 5", data: product })
+        }
+        if (priceLessThan) {
+
+            let product = await productModel.find({ isDeleted: false, price: { $lt: priceLessThan } })
+            return res.status(200).send({ status: true, message: "Success 6", data: product })
+        }
+        //!===============================================
+        if (len != 0) {
+
+            let product = await productModel.find({ isDeleted: false, ...obj })
+            return res.status(200).send({ status: true, message: "Success 7", data: product })
+        }
+        //!===============================================
+        let product = await productModel.find({ isDeleted: false })
+        return res.status(200).send({ status: true, message: "Success 8", data: product })
 
     } catch (error) {
         return res.status(500).send({ status: false, message: error.message })
     }
 }
-
-
 
 
 exports.getProductById = async (req, res) => {
