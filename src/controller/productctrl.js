@@ -198,10 +198,10 @@ exports.updateProduct = async function (req, res) {
             if (!isValidPrice(price)) return res.status(400).send({ status: false, message: "please provide valid price" })
         }
         if (currencyId) {
-            if (!isValidString(currencyId)) return res.status(400).send({ status: false, message: "please provide valid currencyId" })
+            if (currencyId !== "INR") return res.status(400).send({ status: false, message: "please provide valid currencyId" })
         }
         if (currencyFormat) {
-            if (currencyFormat != '₹') return res.status(400).send({ status: false, message: "Please provide valid currencyFormat" })
+            if (currencyFormat !== '₹') return res.status(400).send({ status: false, message: "Please provide valid currencyFormat" })
         }
         if (isFreeShipping) {
             if (!(isFreeShipping == "true" || isFreeShipping == "false")) return res.status(400).send({ status: false, message: "Please enter a boolean value for isFreeShipping" })
