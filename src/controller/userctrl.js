@@ -137,11 +137,11 @@ exports.updateUser = async (req, res) => {
             if (address == null || address == '') return res.status(400).send({ status: false, message: "Address can not be empty" })
         }
 
-        
+        //!=================================================
         req.body.address = JSON.parse(req.body.address)
-
+        
         if (typeof req.body.address != 'object') {
-
+            
             return res.status(400).send({ status: false, message: `Address must be an object` })
         } 
         else {
@@ -164,8 +164,8 @@ exports.updateUser = async (req, res) => {
                 }
             }
         }
-
-
+        //!=================================================
+        
 
         //! updating user data in db
         let updatedUser = await userModel.findOneAndUpdate({ _id: userId }, { $set: data }, { new: true })
