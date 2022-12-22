@@ -27,7 +27,7 @@ exports.isValidPincode = (pincode) => {
 }
 
 exports.isValidString = (value) => {
-    if (typeof value == 'undefined' || value == null) return false;
+    if (typeof value == 'undefined' || value == null || value == '') return false;
     if (typeof value == "string" && value.trim().length == 0) return false;
     return true;
 }

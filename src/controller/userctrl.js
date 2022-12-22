@@ -108,22 +108,23 @@ exports.updateUser = async (req, res) => {
         //! performing validation on these fields
         let { fname, lname, email, phone, password, address } = data
 
-        if (fname) {
+        if (fname || fname == '') {
             if (!isValidString(fname)) return res.status(400).send({ status: false, message: "First name can not be empty" })
             if (!isValidName(fname))   return res.status(400).send({ status: false, message: "Enter a valid first name" })
         }
-        if (lname) {
+
+        if (lname || lname == '') {
             if (!isValidString(lname)) return res.status(400).send({ status: false, message: "Last name can not be empty" })
             if (!isValidName(lname))   return res.status(400).send({ status: false, message: "Enter a valid last name" })
         }
 
-        if (email) {
+        if (email || email == '') {
             email = email.trim()
             if (!isValidString(email)) return res.status(400).send({ status: false, message: "Email can not be empty" })
             if (!isValidEmail(email))  return res.status(400).send({ status: false, message: "Email id is not valid" })
         }
 
-        if (phone) {
+        if (phone || phone == '') {
             phone = phone.trim()
             if (!isValidString(phone)) return res.status(400).send({ status: false, message: "Phone number can not be empty" })
             if (!isValidMobile(phone)) return res.status(400).send({ status: false, message: "Enter a valid phone number" })
@@ -135,7 +136,7 @@ exports.updateUser = async (req, res) => {
             if (user.phone == phone) return res.status(400).send({ status: false, message: "This mobile number is already taken 😕" })
         }
 
-        if (password) {
+        if (password || password == '') {
             if (password.length < 8 || password.length > 15)
                 return res.status(400).send({ status: false, message: "Password length must be between 8-15" })
 
@@ -145,7 +146,7 @@ exports.updateUser = async (req, res) => {
         }
 
 
-        if (address) {
+        if (address || address == '') {
             address = address.trim()
 
             if (isValidString(address) == null || address == '') return res.status(400).send({ status: false, message: "Address can not be empty" })

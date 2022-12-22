@@ -53,7 +53,7 @@ module.exports = mongoose.model(
         status: {
             type: String,
             default: 'pending',
-            enum: [pending, completed, canceled],
+            enum: ['pending', 'completed', 'canceled'],
             trim: true
         },
         deletedAt: {
