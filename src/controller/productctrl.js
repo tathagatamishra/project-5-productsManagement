@@ -1,6 +1,8 @@
 const productModel = require('../model/productmodel')
 
 const validWare = require('../middleware/validware')
+const { model } = require('mongoose')
+const { modelName } = require('../model/productmodel')
 const { isValidString, isValidStyle, isValidPrice, isValidObjectId, validNum } = validWare
 
 
@@ -75,12 +77,12 @@ exports.getProductDetails = async function (req, res) {
 
         let { name, size, priceGreaterThan, priceLessThan } = queries
 
-        let reg = `^${name}`
+        let reg = `^${name}`   //! match starting value
 
         let obj = {}
 
 
-        if (name) { obj.title = { $regex: reg, $options: 'im' } } //! i = case insensitive, m = starting value
+        if (name) { obj.title = { $regex: reg, $options: 'im' } } //! i = case insensitive, m = match
 
         if (size) { obj.availableSizes = size }
 
