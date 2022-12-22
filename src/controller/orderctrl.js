@@ -15,7 +15,7 @@ exports.createOrder = async (req, res) => {
 
         let cart = await cartModel.findOne({userId: userId}).select({_id: 0, __v: 0, createdAt: 0, updatedAt: 0}).lean()
         
-        if (!cart) return res.status(404).send({status: false, message: "Your cart is empty, maybe you do not have any money, so sad... here, take this ₹5, and add some food in your cart, and subscribe to my YouTube channel: https://www.youtube.com/c/vfxinvein , learn VFX & earn money"})
+        if (!cart) return res.status(404).send({status: false, message: "Your cart is empty, maybe you do not have any money 💰, so sad... 🥺 here, take this ₹5 💵 , and add some food 🍕 in your cart, and subscribe to my YouTube channel 🔔: https://www.youtube.com/c/vfxinvein , learn VFX & earn money"})
 
         let totalQuantity = 0
         for (let i = 0; i < cart.items.length; i++) {
