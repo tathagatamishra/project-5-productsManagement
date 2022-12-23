@@ -1,67 +1,69 @@
 const productModel = require('../model/productmodel')
 const userModel = require('../model/usermodel')
 const cartModel = require("../model/cartmodel");
-const { isValidObjectId } = require('../middleware/validware');
-// const {isValidObjectId}=require('mongoose')
+//const { isValidObjectId } = require('../middleware/validware');
+const {isValidObjectId}=require('mongoose')
 
-exports.addToCart=async(req,res)=>{
-
-  if(Object.keys(req.body).length==0){
-    return res.status(400).send({status:false,message:"Request body cannot be empty"})
-  }
-  const {productId,cartId}=req.body
-  if(!productId||productId.trim().length==0||!isValidObjectId(productId)){
-    return res.status(400).send({status:false,message:"Product Id is not present or is not a valid objectId"})
-  }
-  const userId=req.params.userId
-  const cart=await cartModel.findOne({userId})
-  if(cart && !cartId){
-    return res.status(400).send({status:false,message:"Cart exist for the given user please provide cartId"})
-  }
-
-  let totp=0
+exports.addToCart = async (req, res) => {
 
 
-  if(!cart){
-    const product=await productModel.findById(productId)
-    if(!product){
-      return res.status(400).send({staus:false,message:"The product you are trying to add , does not exist"})
+    if (Object.keys(req.body).length == 0) {
+        return res.status(400).send({ status: false, message: "Request body cannot be empty" })
     }
-    const pdtArray=[{productId:product._id,quantity:1}]
-    totp+=product.price
-    const data={
-      userId:userId,
-      items:pdtArray,
-      totalPrice:totp,
-      totalItems:pdtArray.length
+    const { productId, cartId } = req.body
+    console.log(productId, cartId);
+    if (!productId || productId.trim().length == 0 || !isValidObjectId(productId)) {
+        return res.status(400).send({ status: false, message: "Product Id is not present or is not a valid objectId" })
     }
-    const createdCart=await cartModel.create(data)
-    res.status(201).send({status:true,cart:createdCart})
-  }
+    const userId = req.params.userId
+    const cart = await cartModel.findOne({ userId })
+    if (cart && !cartId) {
+        return res.status(400).send({ status: false, message: "Cart exist for the given user please provide cartId" })
+    }
 
-  else{
-    if(cartId||cartId.trim().length==0||!isValidObjectId(productId)){
-      return res.status(400).send({status:false,message:"Product Id is not present or is not a valid objectId"})
+    let totp = 0
+
+
+    if (!cart) {
+        const product = await productModel.findById(productId)
+        if (!product) {
+            return res.status(400).send({ staus: false, message: "The product you are trying to add , does not exist" })
+        }
+        const pdtArray = [{ productId: product._id, quantity: 1 }]
+        totp += product.price
+        const data = {
+            userId: userId,
+            items: pdtArray,
+            totalPrice: totp,
+            totalItems: pdtArray.length
+        }
+        const createdCart = await cartModel.create(data)
+        res.status(201).send({ status: true, cart: createdCart })
     }
-    const pdtArray=cart.items
-    // return res.send({pdtArray})
-    totp=cart.totalPrice
-    const product=await productModel.findById(productId)
-    if(!product){
-      return res.status(400).send({staus:false,message:"The product you are trying to add , does not exist"})
+
+    else {
+        if (!cartId || cartId.trim().length == 0 || !isValidObjectId(cartId)) {
+            return res.status(400).send({ status: false, message: "Product Id is not present or is not a valid objectId" })
+        }
+        const pdtArray = cart.items
+        // return res.send({pdtArray})
+        totp = cart.totalPrice
+        const product = await productModel.findById(productId)
+        if (!product) {
+            return res.status(400).send({ staus: false, message: "The product you are trying to add , does not exist" })
+        }
+        const isPdtAvailable = pdtArray.findIndex(e => e.productId == product._id.toString())
+        // return res.send({isPdtAvailable})
+        if (isPdtAvailable != -1) {
+            pdtArray[isPdtAvailable].quantity = pdtArray[isPdtAvailable].quantity + 1
+        }
+        else {
+            pdtArray.push({ productId: product._id, quantity: 1 })
+        }
+        totp += product.price
+        const updatedCart = await cartModel.findByIdAndUpdate(cartId, { $set: { items: pdtArray, totalPrice: totp, totalItems: pdtArray.length } }, { new: true })
+        res.status(200).send({ status: true, cart: updatedCart })
     }
-    const isPdtAvailable=pdtArray.findIndex(e=>e.productId==product._id.toString())
-    // return res.send({isPdtAvailable})
-    if(isPdtAvailable!=-1){
-      pdtArray[isPdtAvailable].quantity=pdtArray[isPdtAvailable].quantity+1
-    }
-    else{
-      pdtArray.push({productId:product._id,quantity:1})
-    }
-    totp+=product.price
-    const updatedCart=await cartModel.findByIdAndUpdate(cartId,{$set:{items:pdtArray,totalPrice:totp,totalItems:pdtArray.length}},{new:true} )
-    res.status(200).send({status:true,cart:updatedCart})
-  }
 
 }
 
