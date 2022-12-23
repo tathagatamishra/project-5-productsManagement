@@ -22,38 +22,30 @@ exports.createOrder = async (req, res) => {
 
         //todo now it's time to check if any product is out of stock or not --
         //todo only add available products in order items array 
-        let itemArray = []
-
-        for (let i = 0; i < cart.items.length; i++) {
-            itemArray.push(cart.items[i].productId)
-        }
-        
-        let productArray = []
-        let totalPrice
-        let totalItems
+        let itemArray = cart.items
 
         for (let p = 0; p < itemArray.length; p++) {
 
-            let product = await productModel.find({ _id: itemArray[p] })
+            let product = await productModel.find({ _id: itemArray[p].productId })
 
-            if (Object.keys(product).length != 0)
-
-            productArray.push(product)
+            if (Object.keys(product).length != 0) {
+                itemArray.splice(itemArray[i], 1)
+            }
         }
 
+        let totalPrice = 0
         let totalQuantity = 0
-        for (let i = 0; i < cart.items.length; i++) {
-            totalQuantity = totalQuantity + cart.items[i].quantity
+        for (let i = 0; i < itemArray.length; i++) {
+            totalQuantity = totalQuantity + itemArray[i].quantity
         }
-        let cancellable
-        let order
 
-        order = {
-            ...cart,
+        let order = {
+            itemArray,
+            totalPrice: 0,
+            totalItems: itemArray.length,
             totalQuantity: totalQuantity,
-            cancellable: cancellable,
-            status: orderStatus
         }
+
         let createOrder = await orderModel.create(order)
         return res.status(200).send({ status: true, data: createOrder })
     }

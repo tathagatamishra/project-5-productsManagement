@@ -57,13 +57,13 @@ exports.updateCart = async (req, res) => {
             let qua = 0
             if (removeProduct == 0 && productId == updateData.items[i].productId) {
                 qua = updateData.items[i].quantity
-                let res = updateData.items.splice(updateData.items[i], 1)
+                updateData.items.splice(updateData.items[i], 1)
                 updateData.totalPrice = updateData.totalPrice - (productPrice * qua)
                 updateData.totalItems = updateData.totalItems - 1
             }
             if (removeProduct == 1 && productId == updateData.items[i].productId) {
                 if (updateData.items[i].quantity <= 1) {
-                    let res = updateData.items.splice(updateData.items[i], 1)
+                    updateData.items.splice(updateData.items[i], 1)
                     updateData.totalPrice = updateData.totalPrice - productPrice
                     updateData.totalItems = updateData.totalItems - 1
                 } else {
