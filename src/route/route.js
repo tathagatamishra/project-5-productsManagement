@@ -6,7 +6,7 @@ const {userReg, userLogin, getUser, updateUser} = require('../controller/userctr
 const {getProductById, createProduct, getProductDetails, deleteProduct, updateProduct} = require('../controller/productctrl')
 const {createOrder, updateOrder} = require('../controller/orderctrl')
 const userValidations = require('../middleware/userValidations')
-const { updateCart } = require('../controller/cartctrl')
+const { updateCart,addToCart } = require('../controller/cartctrl')
 
 
 
@@ -24,7 +24,7 @@ router.put   ('/products/:productId', updateProduct    )
 router.delete('/products/:productId', deleteProduct    )
 
 //todo Cart APIs ------
-router.post  ('/users/:userId/cart', )
+router.post  ('/users/:userId/cart',addToCart )
 router.put   ('/users/:userId/cart', updateCart )
 router.get   ('/users/:userId/cart', )
 router.delete('/users/:userId/cart', )
