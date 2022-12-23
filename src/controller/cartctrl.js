@@ -143,3 +143,23 @@ exports.updateCart = async (req, res) => {
     }
 }
 
+exports.deleteCart = async (req, res) => {
+    try {
+        let userId = req.params.userId
+
+        if (!isValidObjectId(userId)) return res.status(400).send({ status: false, message: "Invalid userId" })
+        let findCart = await cartModel.findOne({ userId: userId })
+        if (findCart.items.length == 0) return res.status(400).send({ status: false, message: "Cart is Empty" })
+        if (Object.keys(findCart).length == 0) return res.status(404).send({ status: false, message: "cart doesn't exist" })
+
+        let items = []
+        await cartModel.findOneAndUpdate(
+            { userId: userId },
+            { $set: { items: items, totalItems: 0, totalPrice: 0 } },
+            { new: true }
+        )
+        return res.status(204).send({ status: true, message: "Success" })
+    } catch (error) {
+        return res.status(500).send({ status: false, message: error.message })
+    }
+}
