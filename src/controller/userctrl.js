@@ -5,7 +5,7 @@ const validWare = require('../middleware/validware')
 const { isValidEmail, isValidObjectId } = validWare
 
 const jwt = require('jsonwebtoken')
-const bcrypt=require('bcryptjs')
+const bcrypt = require('bcryptjs')
 
 let nameValid = /^[a-zA-Z0-9\ ]{1,20}$/
 
@@ -13,10 +13,10 @@ let nameValid = /^[a-zA-Z0-9\ ]{1,20}$/
 exports.userReg = async (req, res) => {
     try {
         const data = req.body
-        const password=req.body.password
-        const salt=await bcrypt.genSalt(10)
-        const hashPassword=await bcrypt.hash(password,salt)
-        req.body.password=hashPassword
+        const password = req.body.password
+        const salt = await bcrypt.genSalt(10)
+        const hashPassword = await bcrypt.hash(password, salt)
+        req.body.password = hashPassword
         // console.log(hashPassword)
         const file = req.files
 
@@ -43,17 +43,18 @@ exports.userLogin = async (req, res) => {
     try {
         let data = req.body
         if (Object.keys(data).length == 0) return res.status(400).send({ status: false, message: "please provide email and password." })
-        const { email, password } = data
-
+        let { email, password } = data
+        email = email.toLowerCase()
         if (!email) return res.status(400).send({ status: false, message: "email is required" })
         if (!isValidEmail(email)) return res.status(400).send({ status: false, message: "please enter a valid Email" })
 
         if (!password) return res.status(400).send({ status: false, message: "password is required" })
 
-        let userData = await userModel.findOne({ email: email})
-        let hashPassword=userData.password
-        const result=await bcrypt.compare(password,hashPassword)
-        if (!result) return res.status(400).send({ status: false, message: "Entered email or password is incorrect"})
+        let userData = await userModel.findOne({ email: email })
+        if (!userData) return res.status(404).send({ status: false, message: "Email not found" })
+        let hashPassword = userData.password
+        const result = await bcrypt.compare(password, hashPassword)
+        if (!result) return res.status(400).send({ status: false, message: "Entered password is incorrect" })
 
         let token = jwt.sign({
             userId: userData._id.toString()
