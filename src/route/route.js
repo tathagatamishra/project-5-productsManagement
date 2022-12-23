@@ -24,8 +24,8 @@ router.put   ('/products/:productId', updateProduct    )
 router.delete('/products/:productId', deleteProduct    )
 
 //todo Cart APIs ------
-router.post  ('/users/:userId/cart',addToCart )
-router.put   ('/users/:userId/cart', updateCart )
+router.post  ('/users/:userId/cart', addToCart )
+router.put   ('/users/:userId/cart', updateCart)
 router.get   ('/users/:userId/cart', )
 router.delete('/users/:userId/cart',deleteCart)
 

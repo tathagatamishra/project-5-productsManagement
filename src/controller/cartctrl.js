@@ -4,7 +4,8 @@ const cartModel = require("../model/cartmodel");
 const { isValidObjectId } = require('../middleware/validware');
 // const {isValidObjectId}=require('mongoose')
 
-const addToCart=async(req,res)=>{
+exports.addToCart=async(req,res)=>{
+
   if(Object.keys(req.body).length==0){
     return res.status(400).send({status:false,message:"Request body cannot be empty"})
   }
