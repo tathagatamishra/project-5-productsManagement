@@ -15,10 +15,10 @@ exports.createOrder = async (req, res) => {
         //todo if user is present, let's check if user having a cart or not --
         let cart = await cartModel.findOne({ userId: userId }).select({ _id: 0, __v: 0, createdAt: 0, updatedAt: 0 }).lean()
 
-        if (!cart) return res.status(404).send({ status: false, message: "Bro..! 😑 You do not have a cart. 🛒 First create a cart and the come here to place order...!" })
+        if (!cart) return res.status(404).send({ status: false, message: "You do not have a cart. 🛒 First create a cart and the come here to place order" })
 
         //todo if user have cart, now checking the cart is empty or not --
-        if (cart.items.length == 0) return res.status(404).send({ status: false, message: "Your cart is empty, maybe you do not have any money 💰, so sad... 🥺 here, take this ₹5 💵 , and add some food 🍕 in your cart, and subscribe to my YouTube channel 🔔: https://www.youtube.com/c/vfxinvein , learn VFX & earn money" })
+        if (cart.items.length == 0) return res.status(404).send({ status: false, message: "Your cart is empty," })
 
         //todo now it's time to check if any product is out of stock or not --
         //todo only add available products in order items array 
@@ -26,27 +26,37 @@ exports.createOrder = async (req, res) => {
 
         for (let p = 0; p < itemArray.length; p++) {
 
-            let product = await productModel.find({ _id: itemArray[p].productId })
+            let product = await productModel.findOne({ _id: itemArray[p].productId, isDeleted: false })
 
-            if (Object.keys(product).length != 0) {
-                itemArray.splice(itemArray[i], 1)
+            if (!product) {
+                itemArray.splice(itemArray[p], 1)
             }
         }
 
         let totalPrice = 0
+        for (let p = 0; p < itemArray.length; p++) {
+
+            let product = await productModel.findOne({_id: itemArray[p].productId})
+            totalPrice = totalPrice + (itemArray[p].quantity * product.price)
+        }
+
         let totalQuantity = 0
         for (let i = 0; i < itemArray.length; i++) {
             totalQuantity = totalQuantity + itemArray[i].quantity
         }
 
         let order = {
-            itemArray,
-            totalPrice: 0,
+            userId: userId,
+            items: itemArray,
+            totalPrice: totalPrice,
             totalItems: itemArray.length,
             totalQuantity: totalQuantity,
         }
 
         let createOrder = await orderModel.create(order)
+
+        await cartModel.updateOne({userId: userId}, {$set: {items: [], totalPrice: 0,totalQuantity: 0}})
+
         return res.status(200).send({ status: true, data: createOrder })
     }
     catch (error) {
