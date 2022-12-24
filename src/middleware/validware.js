@@ -1,4 +1,4 @@
-const { default: mongoose } = require("mongoose");
+const mongoose = require("mongoose");
 
 exports.isValidEmail = (email) => {
     let emailRegex =
@@ -20,10 +20,8 @@ exports.isValidMobile = (mobile) => {
 }
 
 exports.isValidPincode = (pincode) => {
-    if (/^[1-9][0-9]{5}$/.test(pincode)) {
-        return true
-    }
-    return false
+
+    return /^[1-9][0-9]{5}$/.test(pincode)
 }
 
 exports.isValidString = (value) => {
@@ -39,11 +37,18 @@ exports.validNum = (value) => {
 
 //Style Validation
 exports.isValidStyle = (value) => {
-    return /^[a-zA-Z _.-]+$/.test(value);
+
+    return /^[a-zA-Z _.-]+$/.test(value)
 }
 
 //Price Validation
 exports.isValidPrice = (price) => {
-    return /^[1-9]\d{0,7}(?:\.\d{1,2})?$/.test(price);
+
+    return /^[1-9]\d{0,7}(?:\.\d{1,2})?$/.test(price)
 }
 
+
+exports.stReg = (street) => {
+
+    return /^[a-zA-Z0-9-_./\ ]{1,50}$/.test
+}

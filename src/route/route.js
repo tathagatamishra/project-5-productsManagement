@@ -11,7 +11,7 @@ const { updateCart, deleteCart, addToCart } = require('../controller/cartctrl')
 
 
 // User APIs ------
-router.post  ('/register', userValidations, userReg)
+router.post  ('/register',  userReg)
 router.post  ('/login', userLogin)
 router.get   ('/user/:userId/profile', getUser)
 router.put   ('/user/:userId/profile', updateUser)

@@ -9,7 +9,7 @@ aws.config.update({
 // this function will upload file to aws and return the link
 // we will be using the s3 service of aws
 
-let uploadFile = async (file) => {
+exports.uploadFile = async (file) => {
     
     return new Promise(function (resolve, reject) {
 
@@ -32,4 +32,3 @@ let uploadFile = async (file) => {
 }
 
 
-module.exports = uploadFile

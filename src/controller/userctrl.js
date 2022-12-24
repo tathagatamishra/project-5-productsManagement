@@ -1,5 +1,5 @@
 const userModel = require('../model/usermodel')
-const uploadFile = require('./awsS3')
+const AWS = require('./awsS3')
 
 const validWare = require('../middleware/validware')
 const { isValidEmail, isValidObjectId } = validWare
@@ -12,27 +12,124 @@ let nameValid = /^[a-zA-Z0-9\ ]{1,20}$/
 
 exports.userReg = async (req, res) => {
     try {
-        const data = req.body
-        const password = req.body.password
+
+        const mandatoryFields = ['fname', 'lname', "email", "password", "phone"]
+
+        for (let i of mandatoryFields) {
+            if (!req.body[i]) {
+                return res.status(400).send({ status: false, message: `${i} is not present` })
+            }
+        }
+        let { fname, lname, email, phone, password, address } = req.body
+
+        //todo regex matching ---
+
+        if (!validWare.isValidName(fname)) {
+            return res.status(400).send({ status: false, message: "Provide a valid fname" })
+        }
+        if (!validWare.isValidName(lname)) {
+            return res.status(400).send({ status: false, message: "Provide a valid lname" })
+        }
+
+        //todo------------
+
+        if (!validWare.isValidEmail(email)) {
+            return res.status(400).send({ status: false, message: "Provide a valid email" })
+        }
+        if (!validWare.isValidMobile(phone)) {
+            return res.status(400).send({ status: false, message: "Provide a valid indian phone no." })
+        }
+        let unique = await userModel.findOne({ $or: [{ email: email }, { phone: phone }] })
+        if (unique) {
+            if (unique.email == email) return res.status(400).send({ status: false, message: "This email is already taken 😕" })
+            if (unique.phone == phone) return res.status(400).send({ status: false, message: "This mobile number is already taken 😕" })
+        }
+
+        if (password.length < 8 || password.length > 15) {
+            return res.status(400).send({ status: false, message: "Provide a valid password" })
+        }
+
+        //todo------------
+
+        if (!address) return res.status(400).send({ status: false, message: 'Address is not present' })
+
+        if (!address.startsWith('{') || !address.endsWith('}')) return res.status(400).send({ status: false, message: `Address is not an object` })
+
+        address = JSON.parse(address)
+        req.body.address = address
+
+        if (typeof address != 'object') {
+            return res.status(400).send({ status: false, message: `Address is not an object` })
+        }
+        else {
+            let { shipping, billing } = address
+
+            if (!shipping || typeof shipping != 'object') {
+                return res.status(400).send({ status: false, message: `Shipping address is either not provided or is not an object` })
+            }
+            if (!billing || typeof billing != 'object') {
+                return res.status(400).send({ status: false, message: `Billing address is either not provided or is not an object` })
+            }
+            else {
+                var { street, city, pincode } = shipping
+                if (typeof street != 'string' || typeof city != 'string' || typeof pincode != 'number') {
+                    return res.status(400).send({ status: false, message: `street and city in shipping address should be string and pincode should be a number` })
+                }
+
+                var { street, city, pincode } = billing
+                if (typeof street != 'string' || typeof city != 'string' || typeof pincode != 'number') {
+                    return res.status(400).send({ status: false, message: `street and city in billing address should be string and pincode should be a number` })
+                }
+            }
+        }
+        let add = address.shipping
+        if (!validWare.isValidPincode(add.pincode)) {
+            return res.status(400).send({ status: false, message: "Provide a valid pincode in shipping address" })
+        }
+        if (!validWare.stReg(add.street)) {
+            return res.status(400).send({ status: false, message: "Provide a valid street in shipping address" })
+        }
+        if (!validWare.isValidName(add.city)) { //name regex is also used for city name
+            return res.status(400).send({ status: false, message: "Provide a valid city in shipping address" })
+        }
+
+        add = address.billing
+        if (!validWare.isValidPincode(add.pincode)) {
+            return res.status(400).send({ status: false, message: "Provide a valid pincode in billing address" })
+        }
+        if (!validWare.stReg(add.street)) {
+            return res.status(400).send({ status: false, message: "Provide a valid street in billing address" })
+        }
+        if (!validWare.isValidName(add.city)) { //name regex is also used for city name
+            return res.status(400).send({ status: false, message: "Provide a valid pincode in billing address" })
+        }
+
+        //todo user data creation part ---
+
+        let data = req.body
+        let image = req.files
+
+        //! password encrypting --
         const salt = await bcrypt.genSalt(10)
         const hashPassword = await bcrypt.hash(password, salt)
         req.body.password = hashPassword
-        // console.log(hashPassword)
-        const file = req.files
 
-        if (file && file.length > 0) {
-            if (file[0].mimetype.indexOf('image') == -1) {
-                return res.send({ status: false, message: "Provide an image file" })
-            }
-            const profileURL = await uploadFile(file[0])
+        if (!image || image == undefined || image.length == 0) return res.status(400).send({ status: false, message: "Provide a profile image" })
 
-            data.profileImage = profileURL
-            const createdData = await userModel.create(data)
-            res.send({ status: true, message: "User created successfully", data: createdData })
-            // res.send("Data created!")
-        } else {
-            res.status(400).send({ status: false, msg: "No files found" })
+        //! creating s3 link --
+        if (image && image.length == 1) {
+
+            if (image[0].mimetype.indexOf('image') == -1) return res.status(400).send({ status: false, message: "Provide an image file" })
+
+            let imageLink = await AWS.uploadFile(image[0])
+
+            // if (!imageLink) return res.status(400).send({ status: false, message: "Something went wrong, try again after sometime" })
+
+            data.profileImage = imageLink
         }
+
+        const createdData = await userModel.create(data)
+        res.send({ status: true, message: "Your account created successfully 😃", data: createdData })
     }
     catch (err) {
         res.status(500).send({ status: false, message: "Internal Server Error!", error: err.message })
@@ -96,13 +193,13 @@ exports.updateUser = async (req, res) => {
         let data = req.body
         let image = req.files
 
-        if ((image == undefined || image.length == 0) && Object.keys(data).length == 0) return res.status(200).send({ status: true, message: "Nothing to update 😜" })
+        if ((image == undefined || image.length == 0) && Object.keys(data).length == 0) return res.status(400).send({ status: false, message: "Nothing to update 😜" })
 
         if (image.length == 1) {
 
             if (image[0].mimetype.split('/')[0] != 'image') return res.status(400).send({ status: false, message: "Provide a jpeg or png file 📷" })
 
-            let imageLink = await uploadFile(image[0])
+            let imageLink = await AWS.uploadFile(image[0])
             req.body.profileImage = imageLink
         }
 
@@ -140,36 +237,61 @@ exports.updateUser = async (req, res) => {
                 return res.status(400).send({ status: false, message: "Password length must be between 8-15" })
         }
 
+        //!=================================================
         if (address) address = address.trim()
         if (address) {
+            
             if (address == null || address == '') return res.status(400).send({ status: false, message: "Address can not be empty" })
-        }
 
-        //!=================================================
-        req.body.address = JSON.parse(req.body.address)
+            if (!address.startsWith('{') && !address.endsWith('}')) return res.status(400).send({ status: false, message: `Address is not an object` })
 
-        if (typeof req.body.address != 'object') {
+            address = JSON.parse(address)
 
-            return res.status(400).send({ status: false, message: `Address must be an object` })
-        }
-        else {
-            let { shipping, billing } = req.body.address
-
-            if (!shipping || typeof shipping != 'object') {
-                return res.status(400).send({ status: false, message: `Shipping address is eiether not provided or is not an object` })
-            }
-            if (!billing || typeof billing != 'object') {
-                return res.status(400).send({ status: false, message: `Billing address is eiether not provided or is not an object` })
+            if (typeof address != 'object') {
+                return res.status(400).send({ status: false, message: `Address is not an object` })
             }
             else {
-                var { street, city, pincode } = shipping
-                if (typeof street != 'string' || typeof city != 'string' || typeof pincode != 'number') {
-                    return res.status(400).send({ status: false, message: `street and city in shipping address should be string and pincode should be a number` })
+                let { shipping, billing } = address
+
+                if (!shipping || typeof shipping != 'object') {
+                    return res.status(400).send({ status: false, message: `Shipping address is either not provided or is not an object` })
                 }
-                var { street, city, pincode } = billing
-                if (typeof street != 'string' || typeof city != 'string' || typeof pincode != 'number') {
-                    return res.status(400).send({ status: false, message: `street and city in billing address should be string and pincode should be a number` })
+                if (!billing || typeof billing != 'object') {
+                    return res.status(400).send({ status: false, message: `Billing address is either not provided or is not an object` })
                 }
+                else {
+                    var { street, city, pincode } = shipping
+                    if (typeof street != 'string' || typeof city != 'string' || typeof pincode != 'number') {
+                        return res.status(400).send({ status: false, message: `street and city in shipping address should be string and pincode should be a number` })
+                    }
+
+                    var { street, city, pincode } = billing
+                    if (typeof street != 'string' || typeof city != 'string' || typeof pincode != 'number') {
+                        return res.status(400).send({ status: false, message: `street and city in billing address should be string and pincode should be a number` })
+                    }
+                }
+            }
+
+            let add = address.shipping
+            if (!validWare.isValidPincode(add.pincode)) {
+                return res.status(400).send({ status: false, message: "Provide a valid pincode in shipping address" })
+            }
+            if (!validWare.stReg(add.street)) {
+                return res.status(400).send({ status: false, message: "Provide a valid street in shipping address" })
+            }
+            if (!validWare.isValidName(add.city)) { //name regex is also used for city name
+                return res.status(400).send({ status: false, message: "Provide a valid city in shipping address" })
+            }
+
+            add = address.billing
+            if (!validWare.isValidPincode(add.pincode)) {
+                return res.status(400).send({ status: false, message: "Provide a valid pincode in billing address" })
+            }
+            if (!validWare.stReg(add.street)) {
+                return res.status(400).send({ status: false, message: "Provide a valid street in billing address" })
+            }
+            if (!validWare.isValidName(add.city)) { //name regex is also used for city name
+                return res.status(400).send({ status: false, message: "Provide a valid pincode in billing address" })
             }
         }
         //!=================================================
