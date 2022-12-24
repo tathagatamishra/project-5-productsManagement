@@ -8,42 +8,57 @@ const orderModel = require('../model/ordermodel')
 exports.createOrder = async (req, res) => {
     try {
         //todo checking if user id is present or not --
+
         let userId = req.params.userId
+
         let user = await userModel.findById(userId)
+
         if (!user) return res.status(404).send({ status: false, message: "User not found" })
 
+
         //todo if user is present, let's check if user having a cart or not --
-        let cart = await cartModel.findOne({ userId: userId }).select({ _id: 0, __v: 0, createdAt: 0, updatedAt: 0 }).lean()
+
+        let cart = await cartModel.findOne({ userId: userId }).lean()
 
         if (!cart) return res.status(404).send({ status: false, message: "You do not have a cart. 🛒 First create a cart and the come here to place order" })
 
+
         //todo if user have cart, now checking the cart is empty or not --
+
         if (cart.items.length == 0) return res.status(404).send({ status: false, message: "Your cart is empty," })
+
 
         //todo now it's time to check if any product is out of stock or not --
         //todo only add available products in order items array 
-        let itemArray = cart.items
 
-        for (let p = 0; p < itemArray.length; p++) {
+        //! 1, 2 & 3 variables will help me to create order object
 
-            let product = await productModel.findOne({ _id: itemArray[p].productId, isDeleted: false })
+        let itemArray = cart.items   //! 1
+
+        for (let i = 0; i < itemArray.length; i++) {
+
+            let product = await productModel.findOne({ _id: itemArray[i].productId, isDeleted: false })
 
             if (!product) {
-                itemArray.splice(itemArray[p], 1)
+                itemArray.splice(itemArray[i], 1)
             }
         }
 
-        let totalPrice = 0
-        for (let p = 0; p < itemArray.length; p++) {
+        let totalPrice = 0           //! 2
 
-            let product = await productModel.findOne({_id: itemArray[p].productId})
-            totalPrice = totalPrice + (itemArray[p].quantity * product.price)
+        for (let i = 0; i < itemArray.length; i++) {
+
+            let product = await productModel.findOne({_id: itemArray[i].productId})
+            totalPrice = totalPrice + (itemArray[i].quantity * product.price)
         }
 
-        let totalQuantity = 0
+        let totalQuantity = 0        //! 3
+
         for (let i = 0; i < itemArray.length; i++) {
             totalQuantity = totalQuantity + itemArray[i].quantity
         }
+
+        //todo this order object will get stored in DB --
 
         let order = {
             userId: userId,
@@ -54,6 +69,8 @@ exports.createOrder = async (req, res) => {
         }
 
         let createOrder = await orderModel.create(order)
+
+        //! after creating order, making the cart empty for user --
 
         await cartModel.updateOne({userId: userId}, {$set: {items: [], totalPrice: 0,totalQuantity: 0}})
 
@@ -67,21 +84,80 @@ exports.createOrder = async (req, res) => {
 
 exports.updateOrder = async (req, res) => {
     try {
+        //todo checking if user id is present or not --
+
         let userId = req.params.userId
 
         let user = await userModel.findById(userId)
 
-        if (Object.keys(user).length == 0) return res.status(404).send({ status: false, message: "User not found" })
+        if (!user) return res.status(404).send({ status: false, message: "User not found" })
 
-        let cart = await cartModel.findOne({ userId: userId }).select({ _id: 0, __v: 0, createdAt: 0, updatedAt: 0 }).lean()
+        //todo if user is present, let's check if user placed an order or not --
+        
+        let cart = await cartModel.findOne({ userId: userId }).lean()
+        let cartItem = cart.items.length
 
-        if (Object.keys(cart).length == 0) return res.status(404).send({ status: false, message: "Your cart is empty, maybe you do not have any money 💰, so sad... 🥺 here, take this ₹5 💵 , and add some food 🍕 in your cart, and subscribe to my YouTube channel 🔔: https://www.youtube.com/c/vfxinvein , learn VFX & earn money" })
+        let orderDetail = await orderModel.findOne({ userId: userId, isDeleted: false })
+        
+        if (!orderDetail && cartItem == 0) return res.status(404).send({ status: false, message: "You haven't placed any order, and also your cart is empty" })
+        if (!orderDetail && cartItem != 0) return res.status(404).send({ status: false, message: `You have ${cartItem} product in your cart, 1st place an order then try to update order status` })
 
-        let order = await orderModel.findOne({ userId: userId })
+        if (orderDetail.items.length == 0) {
 
-        if (Object.keys(order).length == 0) return res.status(404).send({ status: false, message: "Place your order, before update" })
 
-        let up
+            return res.status(404).send({ status: false, message: "No items found in your cart order" })
+        }
+        //todo if user have cart, now checking the cart is empty or not --
+
+
+
+        //todo now it's time to check if any product is out of stock or not --
+        //todo only add available products in order items array 
+
+        //! 1, 2 & 3 variables will help me to create order object
+
+        let itemArray = cart.items   //! 1
+
+        for (let i = 0; i < itemArray.length; i++) {
+
+            let product = await productModel.findOne({ _id: itemArray[i].productId, isDeleted: false })
+
+            if (!product) {
+                itemArray.splice(itemArray[i], 1)
+            }
+        }
+
+        let totalPrice = 0           //! 2
+
+        for (let i = 0; i < itemArray.length; i++) {
+
+            let product = await productModel.findOne({_id: itemArray[i].productId})
+            totalPrice = totalPrice + (itemArray[i].quantity * product.price)
+        }
+
+        let totalQuantity = 0        //! 3
+
+        for (let i = 0; i < itemArray.length; i++) {
+            totalQuantity = totalQuantity + itemArray[i].quantity
+        }
+
+        //todo this order object will get stored in DB --
+
+        let order = {
+            userId: userId,
+            items: itemArray,
+            totalPrice: totalPrice,
+            totalItems: itemArray.length,
+            totalQuantity: totalQuantity,
+        }
+
+        let createOrder = await orderModel.create(orderDetail)
+
+        //! after creating order, making the cart empty for user --
+
+        await cartModel.updateOne({userId: userId}, {$set: {items: [], totalPrice: 0,totalQuantity: 0}})
+
+        return res.status(200).send({ status: true, data: createOrder })
 
     }
     catch (error) {
