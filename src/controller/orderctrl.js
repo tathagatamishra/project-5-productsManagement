@@ -2,6 +2,7 @@ const userModel = require('../model/usermodel')
 const productModel = require('../model/productmodel')
 const cartModel = require('../model/cartmodel')
 const orderModel = require('../model/ordermodel')
+const {isValidObjectId} = require('../middleware/validware')
 
 
 
@@ -10,6 +11,7 @@ exports.createOrder = async (req, res) => {
         //todo checking if user id is present or not --
 
         let userId = req.params.userId
+        if (!isValidObjectId(userId)) return res.status(404).send({ status: false, message: "Enter a valid user id" })
 
         let user = await userModel.findById(userId)
 
@@ -87,37 +89,32 @@ exports.updateOrder = async (req, res) => {
         //todo checking if user id is present or not --
 
         let userId = req.params.userId
+        if (!isValidObjectId(userId)) return res.status(404).send({ status: false, message: "Enter a valid user id" })
+
 
         let user = await userModel.findById(userId)
-
         if (!user) return res.status(404).send({ status: false, message: "User not found" })
+        
 
-        //todo if user is present, let's check if user placed an order or not --
-
-        let cart = await cartModel.findOne({ userId: userId }).lean()
-        let cartItem = cart.items.length
-
-        let order = await orderModel.findOne({ userId: userId, status: 'pending', isDeleted: false })
-
-        if (!order && cartItem == 0) return res.status(404).send({ status: false, message: "You haven't placed any order, and also your cart is empty" })
-        if (!order && cartItem != 0) return res.status(404).send({ status: false, message: `You have ${cartItem} product in your cart, 1st place an order then try to update order status` })
-
-
-        let data = req.body
-        let { status, isDeleted } = req.body
-
-        if (status) {
-            if (status == 'completed') {
-                await orderModel.findOneAndUpdate({ _id: order._id }, { $set:  data, })
-        }
-        if (status == 'canceled') {
-            await orderModel.findOneAndUpdate({ _id: order._id }, { $set: data })
-        }
-    }
+        let { orderId, status } = req.body
+        
+        if (!isValidObjectId(orderId)) return res.status(404).send({ status: false, message: "Enter a valid order id" })
+        if (!orderId) return res.status(200).send({ status: true, message: 'Enter the the id of your order'})
+        
+        let order = await orderModel.findOne({ _id: orderId, userId: userId })
+        
+        if (!order) return res.status(404).send({ status: false, message: 'No order found'})
+        
+        if (order.status != 'pending') return res.status(200).send({ status: true, message: `This order is already ${order.status}`})
+        
+        if (!status) return res.status(200).send({ status: false, message: 'Please provide the status of your order'})
 
 
+        let updatedOrder = await orderModel.findOneAndUpdate({ _id: order._id }, { $set: { status: status, cancellable: false } })
+
+        return res.status(200).send({ status: true, message: `Your order ${status} successfully`, data: updatedOrder })
     }
     catch (error) {
-    res.status(500).send({ status: false, message: error.message })
-}
+        res.status(500).send({ status: false, message: error.message })
+    }
 }
