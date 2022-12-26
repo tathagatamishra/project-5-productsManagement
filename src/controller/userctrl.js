@@ -1,13 +1,12 @@
-const userModel = require('../model/usermodel')
+const userModel = require('../model/userModel')
 const AWS = require('./awsS3')
 
-const validWare = require('../middleware/validware')
-const { isValidEmail, isValidObjectId } = validWare
+const validWare = require('../middleware/validWare')
+const { isValidEmail, isValidObjectId, isValidString, isValidName, isValidMobile } = validWare
 
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
 
-let nameValid = /^[a-zA-Z0-9\ ]{1,20}$/
 
 
 exports.userReg = async (req, res) => {
@@ -55,6 +54,7 @@ exports.userReg = async (req, res) => {
 
         if (!address.startsWith('{') || !address.endsWith('}')) return res.status(400).send({ status: false, message: `Address is not an object` })
 
+        address = address.toLowerCase()
         address = JSON.parse(address)
         req.body.address = address
 
@@ -123,7 +123,7 @@ exports.userReg = async (req, res) => {
 
             let imageLink = await AWS.uploadFile(image[0])
 
-            // if (!imageLink) return res.status(400).send({ status: false, message: "Something went wrong, try again after sometime" })
+            if (!imageLink) return res.status(400).send({ status: false, message: "Something went wrong, try again after sometime" })
 
             data.profileImage = imageLink
         }
@@ -142,16 +142,17 @@ exports.userLogin = async (req, res) => {
         if (Object.keys(data).length == 0) return res.status(400).send({ status: false, message: "please provide email and password." })
 
         let { email, password } = data
-        email = email.toLowerCase()
 
         if (!email) return res.status(400).send({ status: false, message: "email is required" })
-        if (!isValidEmail(email)) return res.status(400).send({ status: false, message: "please enter a valid Email" })
+
+        email = email.toLowerCase()
+        if (!validWare.isValidEmail(email)) return res.status(400).send({ status: false, message: "please enter a valid Email" })
 
         if (!password) return res.status(400).send({ status: false, message: "password is required" })
 
         let userData = await userModel.findOne({ email: email })
         if (!userData) return res.status(404).send({ status: false, message: "Email not found" })
-        
+
         let hashPassword = userData.password
 
         const result = await bcrypt.compare(password, hashPassword)
@@ -161,7 +162,7 @@ exports.userLogin = async (req, res) => {
 
             { userId: userData._id.toString() },
             "the-secret-key",
-            { expiresIn: '30m' }
+            { expiresIn: '15m' }
         )
 
         res.setHeader('Authorization', token)
@@ -198,39 +199,44 @@ exports.updateUser = async (req, res) => {
 
         //! need jpg/png to update profile pic, only then link will generate
         let data = req.body
-        let image = req.files
 
-        if ((image == undefined || image.length == 0) && Object.keys(data).length == 0) return res.status(400).send({ status: false, message: "Nothing to update 😜" })
+        if (data.profileImage) {
+            let image = req.files
 
-        if (image.length == 1) {
+            if ((image == undefined || image.length == 0) && Object.keys(data).length == 0) return res.status(400).send({ status: false, message: "Nothing to update 😜" })
 
-            if (image[0].mimetype.split('/')[0] != 'image') return res.status(400).send({ status: false, message: "Provide a jpeg or png file 📷" })
+            if (image.length == 0) return res.status(400).send({ status: false, message: "Provide a profile image to update" })
+            if (image.length == 1) {
 
-            let imageLink = await AWS.uploadFile(image[0])
-            req.body.profileImage = imageLink
+                if (image[0].mimetype.split('/')[0] != 'image') return res.status(400).send({ status: false, message: "Provide a jpeg or png file 📷" })
+
+                let imageLink = await AWS.uploadFile(image[0])
+                req.body.profileImage = imageLink
+            }
         }
 
         //! performing validation on these fields
         let { fname, lname, email, phone, password, address } = data
 
-        if (fname) {
-            if (fname == null || fname.trim() == '') return res.status(400).send({ status: false, message: "First name can not be empty" })
-            if (!fname.match(nameValid)) return res.status(400).send({ status: false, message: "Enter a valid first name" })
+        if (fname || fname == '') {
+            if (!isValidString(fname)) return res.status(400).send({ status: false, message: "First name can not be empty" })
+            if (!isValidName(fname)) return res.status(400).send({ status: false, message: "Enter a valid first name" })
         }
-        if (lname) {
-            if (lname == null || lname.trim() == '') return res.status(400).send({ status: false, message: "Last name can not be empty" })
-            if (!lname.match(nameValid)) return res.status(400).send({ status: false, message: "Enter a valid last name" })
+        if (lname || lname == '') {
+            if (!isValidString(lname)) return res.status(400).send({ status: false, message: "Last name can not be empty" })
+            if (!isValidName(lname)) return res.status(400).send({ status: false, message: "Enter a valid last name" })
         }
 
-        if (email) email = email.trim()
-        if (email) {
-            if (email == null || email == '') return res.status(400).send({ status: false, message: "Email can not be empty" })
+        if (email || email == '') email = email.trim()
+        if (email || email == '') {
+            if (!isValidString(email)) return res.status(400).send({ status: false, message: "Email can not be empty" })
             if (!isValidEmail(email)) return res.status(400).send({ status: false, message: "Email id is not valid" })
         }
 
-        if (phone) phone = phone.trim()
-        if (phone) {
-            if (phone == null || phone == '') return res.status(400).send({ status: false, message: "Phone number can not be empty" })
+        if (phone || phone == '') phone = phone.trim()
+        if (phone || phone == '') {
+            if (!isValidString(phone)) return res.status(400).send({ status: false, message: "Phone number can not be empty" })
+            if (!isValidMobile(phone)) return res.status(400).send({ status: false, message: "Provide a valid indian phone no." })
         }
 
         let unique = await userModel.findOne({ $or: [{ email: email }, { phone: phone }] })
@@ -239,20 +245,28 @@ exports.updateUser = async (req, res) => {
             if (unique.phone == phone) return res.status(400).send({ status: false, message: "This mobile number is already taken 😕" })
         }
 
-        if (password) {
-            if (password.length < 8 || password.length > 15)
+        if (password || password == '') {
+            let trimPassword = password.trim()
+            if (trimPassword.length == 0) return res.status(400).send({ status: false, message: "Password can't be empty" })
+            if (password != trimPassword) return res.status(400).send({ status: false, message: "Please don't begin or end your password with blank space" })
+            if (trimPassword.length < 8 || trimPassword.length > 15)
                 return res.status(400).send({ status: false, message: "Password length must be between 8-15" })
         }
 
         //!=================================================
-        if (address) address = address.trim()
-        if (address) {
+        if (address || address == '') {
+
+            address = address.trim()
 
             if (address == null || address == '') return res.status(400).send({ status: false, message: "Address can not be empty" })
 
-            if (!address.startsWith('{') && !address.endsWith('}')) return res.status(400).send({ status: false, message: `Address is not an object` })
+            if (!address) return res.status(400).send({ status: false, message: 'Address is not present' })
 
+            if (!address.startsWith('{') || !address.endsWith('}')) return res.status(400).send({ status: false, message: `Address is not an object` })
+
+            address = address.toLowerCase()
             address = JSON.parse(address)
+            req.body.address = address
 
             if (typeof address != 'object') {
                 return res.status(400).send({ status: false, message: `Address is not an object` })
@@ -278,7 +292,6 @@ exports.updateUser = async (req, res) => {
                     }
                 }
             }
-
             let add = address.shipping
             if (!validWare.isValidPincode(add.pincode)) {
                 return res.status(400).send({ status: false, message: "Provide a valid pincode in shipping address" })
@@ -302,7 +315,6 @@ exports.updateUser = async (req, res) => {
             }
         }
         //!=================================================
-
 
         //! updating user data in db
         let updatedUser = await userModel.findOneAndUpdate({ _id: userId }, { $set: data }, { new: true })

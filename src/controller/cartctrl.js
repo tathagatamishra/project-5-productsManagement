@@ -1,6 +1,6 @@
-const productModel = require('../model/productmodel')
-const userModel = require('../model/usermodel')
-const cartModel = require("../model/cartmodel");
+const productModel = require('../model/productModel')
+const userModel = require('../model/userModel')
+const cartModel = require("../model/cartModel");
 //const { isValidObjectId } = require('../middleware/validware');
 const {isValidObjectId}=require('mongoose')
 
@@ -155,7 +155,7 @@ exports.deleteCart = async (req, res) => {
         if (Object.keys(findCart).length == 0) return res.status(404).send({ status: false, message: "cart doesn't exist" })
 
         let items = []
-        await cartModel.findOneAndUpdate(
+        await cartModel.updateOne(
             { userId: userId },
             { $set: { items: items, totalItems: 0, totalPrice: 0 } },
             { new: true }

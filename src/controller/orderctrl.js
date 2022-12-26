@@ -1,8 +1,8 @@
-const userModel = require('../model/usermodel')
-const productModel = require('../model/productmodel')
-const cartModel = require('../model/cartmodel')
-const orderModel = require('../model/ordermodel')
-const {isValidObjectId} = require('../middleware/validware')
+const userModel = require('../model/userModel')
+const productModel = require('../model/productModel')
+const cartModel = require('../model/cartModel')
+const orderModel = require('../model/orderModel')
+const {isValidObjectId} = require('../middleware/validWare')
 
 
 

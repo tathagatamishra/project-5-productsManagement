@@ -1,8 +1,8 @@
-const productModel = require('../model/productmodel')
+const productModel = require('../model/productModel')
 
-const validWare = require('../middleware/validware')
+const validWare = require('../middleware/validWare')
 const { model } = require('mongoose')
-const { modelName } = require('../model/productmodel')
+const { modelName } = require('../model/productModel')
 const { isValidString, isValidStyle, isValidPrice, isValidObjectId, validNum } = validWare
 
 
