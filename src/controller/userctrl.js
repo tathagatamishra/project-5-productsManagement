@@ -228,8 +228,8 @@ exports.updateUser = async (req, res) => {
 
         let unique = await userModel.findOne({ $or: [{ email: email }, { phone: phone }] })
         if (unique) {
-            if (user.email == email) return res.status(400).send({ status: false, message: "This email is already taken 😕" })
-            if (user.phone == phone) return res.status(400).send({ status: false, message: "This mobile number is already taken 😕" })
+            if (unique.email == email) return res.status(400).send({ status: false, message: "This email is already taken 😕" })
+            if (unique.phone == phone) return res.status(400).send({ status: false, message: "This mobile number is already taken 😕" })
         }
 
         if (password) {
