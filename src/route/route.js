@@ -13,7 +13,7 @@ const {createOrder, updateOrder} = require('../controller/orderctrl')
 // User APIs ------
 router.post  ('/register',             userReg                                  )
 router.post  ('/login',                userLogin )
-router.get   ('/user/:userId/profile', getUser                                  )//authentication
+router.get   ('/user/:userId/profile', authentication, getUser)//authentication
 router.put   ('/user/:userId/profile', authentication, authorization, updateUser)
 
 //todo Products APIs ------
@@ -25,13 +25,13 @@ router.delete('/products/:productId', deleteProduct    )
 
 //todo Cart APIs ------
 router.post  ('/users/:userId/cart', authentication,authorization,  addToCart )
-router.put   ('/users/:userId/cart',   updateCart)//authorization
-router.get   ('/users/:userId/cart',   fetchCart )
-router.delete('/users/:userId/cart',   deleteCart)
+router.put   ('/users/:userId/cart', authentication,authorization,  updateCart)//authorization
+router.get   ('/users/:userId/cart', authentication,authorization,  fetchCart )
+router.delete('/users/:userId/cart', authentication,authorization,  deleteCart)
 
 //todo Checkout/Order APIs ------
-router.post  ('/users/:userId/orders', createOrder)//authorization
-router.put   ('/users/:userId/orders', updateOrder)//authorization
+router.post  ('/users/:userId/orders',authentication,authorization, createOrder)//authorization
+router.put   ('/users/:userId/orders',authentication,authorization, updateOrder)//authorization
 
 
 
