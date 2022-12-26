@@ -140,8 +140,10 @@ exports.userLogin = async (req, res) => {
     try {
         let data = req.body
         if (Object.keys(data).length == 0) return res.status(400).send({ status: false, message: "please provide email and password." })
+
         let { email, password } = data
         email = email.toLowerCase()
+
         if (!email) return res.status(400).send({ status: false, message: "email is required" })
         if (!isValidEmail(email)) return res.status(400).send({ status: false, message: "please enter a valid Email" })
 
@@ -149,13 +151,18 @@ exports.userLogin = async (req, res) => {
 
         let userData = await userModel.findOne({ email: email })
         if (!userData) return res.status(404).send({ status: false, message: "Email not found" })
+        
         let hashPassword = userData.password
+
         const result = await bcrypt.compare(password, hashPassword)
         if (!result) return res.status(400).send({ status: false, message: "Entered password is incorrect" })
 
-        let token = jwt.sign({
-            userId: userData._id.toString()
-        }, "the-secret-key", { expiresIn: '30m' })
+        let token = jwt.sign(
+
+            { userId: userData._id.toString() },
+            "the-secret-key",
+            { expiresIn: '30m' }
+        )
 
         res.setHeader('Authorization', token)
         return res.status(200).send({ status: true, message: "User login successful", data: { userId: userData._id, token: token } });
@@ -240,7 +247,7 @@ exports.updateUser = async (req, res) => {
         //!=================================================
         if (address) address = address.trim()
         if (address) {
-            
+
             if (address == null || address == '') return res.status(400).send({ status: false, message: "Address can not be empty" })
 
             if (!address.startsWith('{') && !address.endsWith('}')) return res.status(400).send({ status: false, message: `Address is not an object` })
