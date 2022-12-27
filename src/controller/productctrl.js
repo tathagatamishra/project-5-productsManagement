@@ -1,10 +1,7 @@
-const productModel = require('../model/productModel')
+const productModel = require('../model/productmodel')
 
-const validWare = require('../middleware/validWare')
-const { model } = require('mongoose')
-const { modelName } = require('../model/productModel')
+const validWare = require('../middleware/validware')
 const { isValidString, isValidStyle, isValidPrice, isValidObjectId, validNum } = validWare
-
 
 
 exports.createProduct = async function (req, res) {
@@ -14,7 +11,7 @@ exports.createProduct = async function (req, res) {
             return res.status(400).send({ status: false, message: "Please provide the product details" })
         }
         // destructuring fields from data
-        let { title, description, price, currencyId, currencyFormat, availableSizes, installments, style, isFreeShipping, productImage } = data
+        let { title, description, price, currencyId, currencyFormat, availableSizes, installments, style, isFreeShipping } = data
 
         if (!title || !isValidString(title)) return res.status(400).send({ status: false, message: "Product title is required" })
 
@@ -116,7 +113,7 @@ exports.updateProduct = async function (req, res) {
 
         if (!product) return res.status(404).send({ status: false, message: "Product not Found" })
 
-        const data = req.body
+        let data = req.body
         if (Object.keys(data).length == 0) {
             return res.status(400).send({ status: false, message: "please provide data for updation" })
         }
@@ -162,7 +159,7 @@ exports.updateProduct = async function (req, res) {
         }
         if (availableSizes) {
             let sizes = ["S", "XS", "M", "X", "L", "XXL", "XL"];
-            if (!sizes.includes(availableSizes)) return res.status(400).send({ status: false, msg: "Please provide valid size from :  S, XS, M, X, L, XXL, XL", });
+            if (!sizes.includes(availableSizes)) return res.status(400).send({ status: false, message: "Please provide valid size from :  S, XS, M, X, L, XXL, XL", });
         }
 
         let updateProduct = await productModel.findOneAndUpdate({ _id: id }, { $set: data }, { new: true })

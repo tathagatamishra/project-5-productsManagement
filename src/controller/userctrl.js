@@ -1,11 +1,10 @@
-const userModel = require('../model/userModel')
-const AWS = require('./awsS3')
-
-const validWare = require('../middleware/validWare')
-const { isValidEmail, isValidObjectId, isValidString, isValidName, isValidMobile } = validWare
-
+const AWS = require('./aws')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
+
+const userModel = require('../model/usermodel')
+const validWare = require('../middleware/validware')
+const { isValidEmail, isValidObjectId, isValidString, isValidName, isValidMobile } = validWare
 
 
 
@@ -128,7 +127,7 @@ exports.userReg = async (req, res) => {
             data.profileImage = imageLink
         }
 
-        const createdData = await userModel.create(data)
+        let createdData = await userModel.create(data)
         res.send({ status: true, message: "Your account created successfully 😃", data: createdData })
     }
     catch (err) {
@@ -155,7 +154,7 @@ exports.userLogin = async (req, res) => {
 
         let hashPassword = userData.password
 
-        const result = await bcrypt.compare(password, hashPassword)
+        let result = await bcrypt.compare(password, hashPassword)
         if (!result) return res.status(400).send({ status: false, message: "Entered password is incorrect" })
 
         let token = jwt.sign(
@@ -179,7 +178,7 @@ exports.getUser = async function (req, res) {
         if (!isValidObjectId(userId)) {
             return res.status(400).send({ status: false, message: "Invalid userId" })
         }
-        const checkId = await userModel.findOne({ _id: userId })
+        let checkId = await userModel.findOne({ _id: userId })
         if (!checkId) {
             return res.status(400).send({ status: false, message: "User not found" })
         }
