@@ -11,11 +11,11 @@ aws.config.update({
 
 exports.uploadFile = async (file) => {
     
-    return new Promise(function (resolve, reject) {
+    return new Promise( (resolve, reject) => {
 
         let s3 = new aws.S3({ apiVersion: '2006-03-01' }); 
 
-        var uploadParams = {
+        let uploadParams = {
             ACL: "public-read",
             Bucket: "classroom-training-bucket",
             Key: "profiles/" + file.originalname, 
@@ -25,7 +25,8 @@ exports.uploadFile = async (file) => {
         s3.upload(uploadParams, function (err, data) {
 
             if (err) return reject({ "error": err })
-
+            
+            console.log(data)
             return resolve(data.Location)
         })
     })

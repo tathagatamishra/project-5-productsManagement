@@ -49,5 +49,5 @@ exports.isValidPrice = (price) => {
 
 exports.stReg = (street) => {
 
-    return /^[a-zA-Z0-9-_./\ ]{1,50}$/.test
+    return /^[a-zA-Z0-9-_./\ ]{1,50}$/.test(street)
 }
