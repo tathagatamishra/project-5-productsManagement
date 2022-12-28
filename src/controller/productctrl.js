@@ -61,6 +61,7 @@ exports.createProduct = async function (req, res) {
             let imageLink = await uploadFile(image[0])
             req.body.productImage = imageLink
         }
+        const createProduct = await productModel.create(data)
         return res.status(201).send({ status: true, message: "Success", data: createProduct });
 
     } catch (error) {
