@@ -76,7 +76,7 @@ exports.createOrder = async (req, res) => {
 
         await cartModel.updateOne({ userId: userId }, { $set: { items: [], totalPrice: 0, totalQuantity: 0 } })
 
-        return res.status(200).send({ status: true, data: createOrder })
+        return res.status(201).send({ status: true, data: createOrder })
     }
     catch (error) {
         res.status(500).send({ status: false, message: error.message })
@@ -89,7 +89,7 @@ exports.updateOrder = async (req, res) => {
         //todo checking if user id is present or not --
 
         let userId = req.params.userId
-        if (!isValidObjectId(userId)) return res.status(404).send({ status: false, message: "Enter a valid user id" })
+        if (!isValidObjectId(userId)) return res.status(400).send({ status: false, message: "Enter a valid user id" })
 
 
         let user = await userModel.findById(userId)
@@ -98,16 +98,16 @@ exports.updateOrder = async (req, res) => {
 
         let { orderId, status } = req.body
         
-        if (!isValidObjectId(orderId)) return res.status(404).send({ status: false, message: "Enter a valid order id" })
-        if (!orderId) return res.status(200).send({ status: true, message: 'Enter the the id of your order'})
+        if (!isValidObjectId(orderId)) return res.status(400).send({ status: false, message: "Enter a valid order id" })
+        if (!orderId) return res.status(400).send({ status: false, message: 'Enter the id of your order'})
         
         let order = await orderModel.findOne({ _id: orderId, userId: userId })
         
         if (!order) return res.status(404).send({ status: false, message: 'No order found'})
         
-        if (order.status != 'pending') return res.status(200).send({ status: true, message: `This order is already ${order.status}`})
+        if (order.status != 'pending') return res.status(400).send({ status: false, message: `This order is already ${order.status}`})
         
-        if (!status) return res.status(200).send({ status: false, message: 'Please provide the status of your order'})
+        if (!status) return res.status(400).send({ status: false, message: 'Please provide the status of your order'})
 
 
         let updatedOrder = await orderModel.findOneAndUpdate({ _id: order._id }, { $set: { status: status, cancellable: false } })
