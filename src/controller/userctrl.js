@@ -11,7 +11,7 @@ const { isValidEmail, isValidObjectId, isValidString, isValidName, isValidMobile
 exports.userReg = async (req, res) => {
     try {
 
-        const mandatoryFields = ['fname', 'lname', "email", "password", "phone"]
+        const mandatoryFields = ['fname', 'lname', "email", "password", "phone", 'address']
 
         for (let i of mandatoryFields) {
             if (!req.body[i]) {
@@ -43,13 +43,13 @@ exports.userReg = async (req, res) => {
             if (unique.phone == phone) return res.status(400).send({ status: false, message: "This mobile number is already taken 😕" })
         }
 
+        let trimPassword = password.trim()
+        if (password != trimPassword) return res.status(400).send({ status: false, message: "Please don't begin or end your password with blank space" })
         if (password.length < 8 || password.length > 15) {
-            return res.status(400).send({ status: false, message: "Provide a valid password" })
+            return res.status(400).send({ status: false, message: "Provide a password within length 8 to 15" })
         }
 
         //todo------------
-
-        if (!address) return res.status(400).send({ status: false, message: 'Address is not present' })
 
         if (!address.startsWith('{') || !address.endsWith('}')) return res.status(400).send({ status: false, message: `Address is not an object` })
 
@@ -111,7 +111,7 @@ exports.userReg = async (req, res) => {
         //! password encrypting --
         const salt = await bcrypt.genSalt(10)
         const hashPassword = await bcrypt.hash(password, salt)
-        req.body.password = hashPassword
+        data.password = hashPassword
 
         if (!image || image == undefined || image.length == 0) return res.status(400).send({ status: false, message: "Provide a profile image" })
 
@@ -161,7 +161,7 @@ exports.userLogin = async (req, res) => {
 
             { userId: userData._id.toString() },
             "the-secret-key",
-            { expiresIn: '15m' }
+            { expiresIn: '15h' }
         )
 
         res.setHeader('Authorization', token)
@@ -198,18 +198,21 @@ exports.updateUser = async (req, res) => {
 
         //! need jpg/png to update profile pic, only then link will generate
         let data = req.body
+        let image = req.files
 
-        if (data.profileImage) {
-            let image = req.files
+        if ((!image || image == undefined || image.length == 0) && Object.keys(data).length == 0) {
+            return res.status(400).send({ status: false, message: "Nothing to update 😜" })
+        }
 
-            if ((image == undefined || image.length == 0) && Object.keys(data).length == 0) return res.status(400).send({ status: false, message: "Nothing to update 😜" })
+        if (image || image != undefined || image == '' || image.length == 1) {
 
-            if (image.length == 0) return res.status(400).send({ status: false, message: "Provide a profile image to update" })
+            if (image == '') return res.status(400).send({ status: false, message: "Provide a profile image to update" })
             if (image.length == 1) {
 
                 if (image[0].mimetype.split('/')[0] != 'image') return res.status(400).send({ status: false, message: "Provide a jpeg or png file 📷" })
 
                 let imageLink = await AWS.uploadFile(image[0])
+                if (!imageLink) return res.status(400).send({ status: false, message: "Something went wrong, try again after sometime" })
                 req.body.profileImage = imageLink
             }
         }
@@ -248,12 +251,12 @@ exports.updateUser = async (req, res) => {
             let trimPassword = password.trim()
             if (trimPassword.length == 0) return res.status(400).send({ status: false, message: "Password can't be empty" })
             if (password != trimPassword) return res.status(400).send({ status: false, message: "Please don't begin or end your password with blank space" })
-            if (trimPassword.length < 8 || trimPassword.length > 15){
+            if (trimPassword.length < 8 || trimPassword.length > 15) {
                 return res.status(400).send({ status: false, message: "Password length must be between 8-15" })
             }
             const salt = await bcrypt.genSalt(10)
             const hashPassword = await bcrypt.hash(password, salt)
-            data.password = hashPassword  
+            data.password = hashPassword
         }
 
         //!=================================================

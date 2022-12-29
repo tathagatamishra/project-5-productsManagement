@@ -26,7 +26,6 @@ exports.uploadFile = async (file) => {
 
             if (err) return reject({ "error": err })
             
-            console.log(data)
             return resolve(data.Location)
         })
     })

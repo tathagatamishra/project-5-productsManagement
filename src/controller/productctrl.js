@@ -60,7 +60,7 @@ exports.createProduct = async function (req, res) {
                 return res.status(400).send({ status: false, message: "Provide a jpeg or png file 📷" })
             }
             let imageLink = await AWS.uploadFile(image[0])
-            req.body.productImage = imageLink
+            data.productImage = imageLink
         }
         const createProduct = await productModel.create(data)
         return res.status(201).send({ status: true, message: "Success", data: createProduct });
@@ -80,7 +80,6 @@ exports.getProductDetails = async function (req, res) {
 
         let obj = {}
 
-
         if (name) { obj.title = { $regex: reg, $options: 'im' } } //! i = case insensitive, m = match
 
         if (size) { obj.availableSizes = size }
@@ -91,16 +90,25 @@ exports.getProductDetails = async function (req, res) {
 
         else if (priceLessThan) { obj.price = { $lt: priceLessThan } }
 
-        if(!(priceSort == 1 || priceSort == -1)) return res.status(400).send({status:false,message:"priceSort only accepts 1 or -1"})
-        let temp = priceSort
+        let product
 
-        let product = await productModel.find({ isDeleted: false, ...obj }).sort({ price: `${temp}` })
+        if (priceSort) {
+
+            priceSort = Number(priceSort)
+            
+            if(![1,-1].includes(priceSort)) return res.status(400).send({status:false,message:"priceSort only accepts 1 or -1"})
+
+            product = await productModel.find({ isDeleted: false, ...obj }).sort({ price: priceSort })
+        }
+        else {
+            product = await productModel.find({ isDeleted: false, ...obj })
+        }
 
         if (product.length == 0) return res.status(404).send({ status: false, message: 'No product found 😕' })
 
         return res.status(200).send({ status: true, message: "Success", data: product })
-
-    } catch (error) {
+    }
+    catch (error) {
         return res.status(500).send({ status: false, message: error.message })
     }
 }
@@ -179,7 +187,7 @@ exports.getProductById = async (req, res) => {
     try {
         let id = req.params.productId
 
-        let product = await productModel.findOne({ _id: id, isDeleted:false })
+        let product = await productModel.findOne({ _id: id, isDeleted: false })
 
         if (!product) return res.status(404).send({ status: false, message: "Product not found 😕" })
 
