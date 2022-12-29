@@ -1,5 +1,5 @@
 const productModel = require('../model/productmodel')
-
+const AWS = require('../controller/aws')
 const validWare = require('../middleware/validware')
 const { isValidString, isValidStyle, isValidPrice, isValidObjectId, validNum } = validWare
 
@@ -36,7 +36,7 @@ exports.createProduct = async function (req, res) {
 
 
         if (!installments) return res.status(400).send({ status: false, message: "Installments required" })
-        if (!validNum(installments)) return res.status(400).send({ status: false, message: "Installments should a number" })
+        if (!Number(installments)) return res.status(400).send({ status: false, message: "Installments should a number" })
 
         if (style) {
             if (!isValidStyle(style)) {
@@ -44,9 +44,10 @@ exports.createProduct = async function (req, res) {
             }
         }
 
-        if (!isFreeShipping) return res.status(400).send({ status: false, message: "isFreeShipping required" });
-        if (!(isFreeShipping == "true" || isFreeShipping == "false")) {
-            return res.status(400).send({ status: false, message: "Please enter a boolean value for isFreeShipping" })
+        if (isFreeShipping) {
+            if (!(isFreeShipping == "true" || isFreeShipping == "false")) {
+                return res.status(400).send({ status: false, message: "Please enter a boolean value for isFreeShipping" })
+            }
         }
 
         let image = req.files
@@ -58,7 +59,7 @@ exports.createProduct = async function (req, res) {
             if (image[0].mimetype.split('/')[0] != 'image') {
                 return res.status(400).send({ status: false, message: "Provide a jpeg or png file 📷" })
             }
-            let imageLink = await uploadFile(image[0])
+            let imageLink = await AWS.uploadFile(image[0])
             req.body.productImage = imageLink
         }
         const createProduct = await productModel.create(data)
@@ -73,7 +74,7 @@ exports.getProductDetails = async function (req, res) {
     try {
         let queries = req.query
 
-        let { name, size, priceGreaterThan, priceLessThan } = queries
+        let { name, size, priceGreaterThan, priceLessThan, priceSort } = queries
 
         let reg = `^${name}`   //! match starting value
 
@@ -90,9 +91,10 @@ exports.getProductDetails = async function (req, res) {
 
         else if (priceLessThan) { obj.price = { $lt: priceLessThan } }
 
+        if(!(priceSort == 1 || priceSort == -1)) return res.status(400).send({status:false,message:"priceSort only accepts 1 or -1"})
+        let temp = priceSort
 
-
-        let product = await productModel.find({ isDeleted: false, ...obj }).sort({ price: 1 })
+        let product = await productModel.find({ isDeleted: false, ...obj }).sort({ price: `${temp}` })
 
         if (product.length == 0) return res.status(404).send({ status: false, message: 'No product found 😕' })
 
@@ -177,7 +179,7 @@ exports.getProductById = async (req, res) => {
     try {
         let id = req.params.productId
 
-        let product = await productModel.findOne({ _id: id, })
+        let product = await productModel.findOne({ _id: id, isDeleted:false })
 
         if (!product) return res.status(404).send({ status: false, message: "Product not found 😕" })
 
