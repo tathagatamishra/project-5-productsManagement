@@ -30,7 +30,7 @@ exports.isValidString = (value) => {
 }
 
 exports.validNum = (value) => {
-    return /[0-9]\d/.test(value)
+    return /[0-9]/.test(value)
 }
 
 

@@ -248,8 +248,12 @@ exports.updateUser = async (req, res) => {
             let trimPassword = password.trim()
             if (trimPassword.length == 0) return res.status(400).send({ status: false, message: "Password can't be empty" })
             if (password != trimPassword) return res.status(400).send({ status: false, message: "Please don't begin or end your password with blank space" })
-            if (trimPassword.length < 8 || trimPassword.length > 15)
+            if (trimPassword.length < 8 || trimPassword.length > 15){
                 return res.status(400).send({ status: false, message: "Password length must be between 8-15" })
+            }
+            const salt = await bcrypt.genSalt(10)
+            const hashPassword = await bcrypt.hash(password, salt)
+            data.password = hashPassword  
         }
 
         //!=================================================
